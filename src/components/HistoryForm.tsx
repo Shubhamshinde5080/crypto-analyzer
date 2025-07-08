@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ExclamationCircleIcon } from '@heroicons/react/24/outline';
 
 type HistoryFormProps = {
   coin: string;
@@ -14,46 +15,138 @@ export default function HistoryForm({ coin }: HistoryFormProps) {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [interval, setInterval] = useState<IntervalType>('1h');
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!from) {
+      newErrors.from = 'Start date is required';
+    }
+
+    if (!to) {
+      newErrors.to = 'End date is required';
+    }
+
+    if (from && to) {
+      const fromDate = new Date(from);
+      const toDate = new Date(to);
+      const now = new Date();
+
+      if (fromDate >= toDate) {
+        newErrors.to = 'End date must be after start date';
+      }
+
+      if (toDate > now) {
+        newErrors.to = 'End date cannot be in the future';
+      }
+
+      // Check reasonable time range (not more than 1 year)
+      const oneYearAgo = new Date();
+      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+      if (fromDate < oneYearAgo) {
+        newErrors.from = 'Start date cannot be more than 1 year ago';
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!coin || !from || !to) return;
 
-    const fromISO = new Date(from).toISOString();
-    const toISO = new Date(to).toISOString();
-    router.push(`/coins/${coin}/history/results?from=${fromISO}&to=${toISO}&interval=${interval}`);
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const fromISO = new Date(from).toISOString();
+      const toISO = new Date(to).toISOString();
+      router.push(
+        `/coins/${coin}/history/results?from=${fromISO}&to=${toISO}&interval=${interval}`
+      );
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setErrors({ general: 'Failed to submit form. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="bg-white shadow-lg rounded-lg p-6 mb-6">
       <h2 className="text-xl font-semibold mb-4">Historical Data Analysis</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+
+      {errors.general && (
+        <div
+          className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center"
+          role="alert"
+        >
+          <ExclamationCircleIcon className="h-5 w-5 text-red-500 mr-2" />
+          <span className="text-red-700">{errors.general}</span>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">From Date & Time:</label>
+          <label htmlFor="from-date" className="block text-sm font-medium text-gray-700 mb-2">
+            From Date & Time:
+          </label>
           <input
+            id="from-date"
             type="datetime-local"
             required
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className="border border-gray-300 p-3 rounded-lg w-full max-w-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className={`border p-3 rounded-lg w-full max-w-xs focus:ring-2 focus:ring-blue-500 ${
+              errors.from ? 'border-red-500' : 'border-gray-300'
+            }`}
+            aria-describedby={errors.from ? 'from-error' : undefined}
+            aria-invalid={!!errors.from}
           />
+          {errors.from && (
+            <p id="from-error" className="mt-1 text-sm text-red-600" role="alert">
+              {errors.from}
+            </p>
+          )}
         </div>
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">To Date & Time:</label>
+          <label htmlFor="to-date" className="block text-sm font-medium text-gray-700 mb-2">
+            To Date & Time:
+          </label>
           <input
+            id="to-date"
             type="datetime-local"
             required
             value={to}
             onChange={(e) => setTo(e.target.value)}
-            className="border border-gray-300 p-3 rounded-lg w-full max-w-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className={`border p-3 rounded-lg w-full max-w-xs focus:ring-2 focus:ring-blue-500 ${
+              errors.to ? 'border-red-500' : 'border-gray-300'
+            }`}
+            aria-describedby={errors.to ? 'to-error' : undefined}
+            aria-invalid={!!errors.to}
           />
+          {errors.to && (
+            <p id="to-error" className="mt-1 text-sm text-red-600" role="alert">
+              {errors.to}
+            </p>
+          )}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Time Interval:</label>
+          <label htmlFor="interval" className="block text-sm font-medium text-gray-700 mb-2">
+            Time Interval:
+          </label>
           <select
+            id="interval"
             value={interval}
             onChange={(e) => setInterval(e.target.value as IntervalType)}
             className="border border-gray-300 p-3 rounded-lg w-full max-w-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            aria-describedby="interval-help"
           >
             <option value="15m">15 minutes</option>
             <option value="30m">30 minutes</option>
@@ -62,13 +155,22 @@ export default function HistoryForm({ coin }: HistoryFormProps) {
             <option value="6h">6 hours</option>
             <option value="1d">1 day</option>
           </select>
+          <p id="interval-help" className="mt-1 text-sm text-gray-500">
+            Select the time interval for historical data analysis
+          </p>
         </div>
+
         <button
           type="submit"
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+          disabled={isSubmitting}
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-describedby="submit-help"
         >
-          Analyze Historical Data
+          {isSubmitting ? 'Analyzing...' : 'Analyze Historical Data'}
         </button>
+        <p id="submit-help" className="mt-1 text-sm text-gray-500">
+          Generate historical analysis report for {coin}
+        </p>
       </form>
     </div>
   );

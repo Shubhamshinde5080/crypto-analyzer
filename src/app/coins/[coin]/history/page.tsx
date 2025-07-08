@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import HistoryForm from '@/components/HistoryForm';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { Metadata } from 'next';
 
 type CoinHistoryPageProps = {
@@ -22,7 +23,11 @@ export default async function CoinHistoryPage({ params }: CoinHistoryPageProps) 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Navigation */}
         <div className="mb-6">
-          <Link href="/" className="text-blue-600 hover:text-blue-800 font-medium">
+          <Link
+            href="/"
+            className="text-blue-600 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-2 py-1"
+            aria-label="Go back to coin list"
+          >
             ← Back to Coin List
           </Link>
         </div>
@@ -38,7 +43,9 @@ export default async function CoinHistoryPage({ params }: CoinHistoryPageProps) 
         </div>
 
         {/* History Form */}
-        <HistoryForm coin={coin} />
+        <ErrorBoundary>
+          <HistoryForm coin={coin} />
+        </ErrorBoundary>
 
         {/* Instructions */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">

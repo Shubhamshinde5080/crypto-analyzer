@@ -3,16 +3,7 @@
 import { PriceChart } from './PriceChart';
 import { VolumeChart } from './VolumeChart';
 import { format } from 'date-fns';
-
-interface HistoryData {
-  timestamp: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
-  pctChange: number | null;
-}
+import type { HistoryData } from '@/types/api';
 
 interface PDFReportProps {
   coin: string;

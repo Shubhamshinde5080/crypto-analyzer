@@ -4,33 +4,16 @@ import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useParams } from 'next/navigation';
 import Link from 'next/link';
-import axios from 'axios';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import AnalysisTable from '@/components/AnalysisTable';
 import { PriceChart } from '@/components/PriceChart';
 import { VolumeChart } from '@/components/VolumeChart';
 import PDFReport from '@/components/PDFReport';
-
-type Bucket = {
-  timestamp: number;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
-  pctChange: number | null;
-};
-
-interface HistoryData {
-  timestamp: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
-  pctChange: number | null;
-}
+import { LoadingState } from '@/components/LoadingState';
+import ErrorBoundary, { APIErrorFallback } from '@/components/ErrorBoundary';
+import { fetchWithRetry, APIError } from '@/lib/error-handling';
+import type { HistoryData } from '@/types/api';
 
 export default function HistoryResultsPage() {
   const params = useParams();
@@ -38,7 +21,7 @@ export default function HistoryResultsPage() {
   const searchParams = useSearchParams();
   const [data, setData] = useState<HistoryData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
   const [generating, setGenerating] = useState(false);
   const [clientExporting, setClientExporting] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
@@ -50,29 +33,35 @@ export default function HistoryResultsPage() {
   useEffect(() => {
     async function fetchData() {
       if (!from || !to || !interval) {
-        setError('Missing required parameters');
+        setError(new Error('Missing required parameters'));
         setLoading(false);
         return;
       }
 
       try {
         setLoading(true);
-        const response = await axios.get('/api/history', {
-          params: { coin, from, to, interval },
+        setError(null);
+
+        const params = new URLSearchParams({
+          coin,
+          from,
+          to,
+          interval,
         });
 
-        // Convert Bucket[] to HistoryData[] (timestamp number to string)
-        const convertedData: HistoryData[] = response.data.map((bucket: Bucket) => ({
-          ...bucket,
-          timestamp: new Date(bucket.timestamp).toISOString(),
-        }));
+        const response = await fetchWithRetry(`/api/history?${params}`, {
+          method: 'GET',
+        });
 
-        setData(convertedData);
-        setError(null);
+        if (!response.ok) {
+          throw new APIError('Failed to fetch historical data', response.status);
+        }
+
+        const responseData: HistoryData[] = await response.json();
+        setData(responseData);
       } catch (err: unknown) {
-        const error = err as { response?: { data?: { error?: string } } };
         console.error('Error fetching data:', err);
-        setError(error.response?.data?.error || 'Failed to fetch data');
+        setError(err instanceof Error ? err : new Error('Failed to fetch data'));
       } finally {
         setLoading(false);
       }
@@ -160,24 +149,6 @@ export default function HistoryResultsPage() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center py-12">
-            <div className="text-red-600 text-xl mb-4">Error: {error}</div>
-            <Link
-              href={`/coins/${coin}/history`}
-              className="text-blue-600 hover:text-blue-800 font-medium"
-            >
-              ← Go back and try again
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -185,7 +156,8 @@ export default function HistoryResultsPage() {
         <div className="mb-6 flex justify-between items-center">
           <Link
             href={`/coins/${coin}/history`}
-            className="text-blue-600 hover:text-blue-800 font-medium"
+            className="text-blue-600 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-2 py-1"
+            aria-label={`Go back to ${coin} history form`}
           >
             ← Back to History Form
           </Link>
@@ -193,14 +165,16 @@ export default function HistoryResultsPage() {
             <button
               onClick={exportClientPDF}
               disabled={clientExporting || !data.length}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              aria-label="Export PDF using client-side generation"
             >
               {clientExporting ? 'Exporting...' : 'Client PDF Export'}
             </button>
             <button
               onClick={generateServerPDF}
               disabled={generating || !data.length}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              aria-label="Export PDF using server-side generation"
             >
               {generating ? 'Generating...' : 'Server PDF Export'}
             </button>
@@ -216,12 +190,16 @@ export default function HistoryResultsPage() {
           </p>
         </div>
 
-        {/* Charts */}
-        <div className="space-y-6">
-          <PriceChart data={data} />
-          <VolumeChart data={data} />
-          <AnalysisTable data={data} />
-        </div>
+        {/* Charts and Data */}
+        <LoadingState loading={loading} error={error}>
+          <ErrorBoundary fallback={APIErrorFallback}>
+            <div className="space-y-6">
+              <PriceChart data={data} />
+              <VolumeChart data={data} />
+              <AnalysisTable data={data} />
+            </div>
+          </ErrorBoundary>
+        </LoadingState>
 
         {/* PDF Report Container for Client Export */}
         <div
