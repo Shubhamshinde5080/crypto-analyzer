@@ -1,0 +1,11 @@
+{
+  "functions": {
+    "src/app/api/generate-pdf/route.ts": {
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "COINGECKO_API_URL": "https://api.coingecko.com/api/v3"
+  }
+}

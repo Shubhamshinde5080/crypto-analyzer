@@ -1,26 +1,38 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* custom resets or overrides */
+html {
+  scroll-behavior: smooth;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* PDF Report Print Styles */
+.print-report-container.print-mode {
+  display: block !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 210mm;
+  min-height: 297mm;
+  background: white;
+  z-index: 9999;
+  overflow: visible;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.print-report-container {
+  page-break-after: always;
+}
+
+/* Ensure charts render properly in PDF */
+.recharts-wrapper {
+  background: white !important;
+}
+
+@media print {
+  .print-report-container {
+    display: block !important;
+    position: static !important;
+    z-index: auto !important;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
