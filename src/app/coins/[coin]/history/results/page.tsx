@@ -55,9 +55,7 @@ export default function HistoryResultsPage() {
         setLoading(false);
       }
     })();
-  }, [coin, from, to, interval]);
-
-  /* ─────────────────────────────── pdf export */
+  }, [coin, from, to, interval]); /* ─────────────────────────────── pdf export */
   const handleExport = async () => {
     if (!from || !to || !interval) return;
     setGenerating(true);
@@ -82,9 +80,16 @@ export default function HistoryResultsPage() {
       URL.revokeObjectURL(fileURL);
     } catch (err) {
       console.error(err);
-      // Fallback to print page
+      // Fallback to print page with user-friendly message
       const printUrl = `/coins/${coin}/history/print?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&interval=${interval}`;
       window.open(printUrl, '_blank');
+
+      // Show user-friendly message
+      setTimeout(() => {
+        alert(
+          "PDF generation is temporarily unavailable. A print-optimized page has been opened - please use your browser's print function (Ctrl+P or Cmd+P) to save as PDF."
+        );
+      }, 500);
     } finally {
       setGenerating(false);
     }

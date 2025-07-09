@@ -20,13 +20,11 @@ async function fetchAnalysisData(
   interval: string
 ): Promise<HistoryData[]> {
   try {
-    // Use the same host as the current request
+    // Construct the full URL for server-side fetch
     const baseUrl =
       process.env.NODE_ENV === 'development'
         ? 'http://localhost:3000'
-        : process.env.VERCEL_URL
-          ? `https://${process.env.VERCEL_URL}`
-          : 'http://localhost:3000';
+        : `https://${process.env.VERCEL_URL || 'crypto-analyzer-one.vercel.app'}`;
 
     const apiURL = `${baseUrl}/api/history?coin=${coin}&from=${from}&to=${to}&interval=${interval}`;
     console.log('Fetching data from:', apiURL);
