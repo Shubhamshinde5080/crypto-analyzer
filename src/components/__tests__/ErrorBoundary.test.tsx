@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import { ThemeProvider } from '@/components/ThemeProvider';
+import { ThemeProvider } from 'next-themes';
 
 // Test component that throws an error
 function ThrowError({ shouldThrow }: { shouldThrow: boolean }) {
@@ -11,7 +11,11 @@ function ThrowError({ shouldThrow }: { shouldThrow: boolean }) {
 }
 
 const renderWithTheme = (component: React.ReactElement) => {
-  return render(<ThemeProvider>{component}</ThemeProvider>);
+  return render(
+    <ThemeProvider attribute="class" defaultTheme="light">
+      {component}
+    </ThemeProvider>
+  );
 };
 
 describe('ErrorBoundary', () => {

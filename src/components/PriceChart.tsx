@@ -11,10 +11,14 @@ import {
 } from 'recharts';
 import { format } from 'date-fns';
 import type { HistoryData } from '@/types/api';
+import { fmtUSD } from '@/lib/format';
+import { motion } from 'framer-motion';
 
 interface Props {
   data: HistoryData[];
 }
+const fadeSlide = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } };
+
 export default function PriceChart({ data }: Props) {
   if (!data.length) return null;
   const chartData = data.map((d) => ({
@@ -23,28 +27,30 @@ export default function PriceChart({ data }: Props) {
   }));
 
   return (
-    <section className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
+    <motion.section
+      className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8"
+      variants={fadeSlide}
+      initial="hidden"
+      animate="show"
+    >
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Price Chart</h3>
-      <div className="w-full h-64">
+      <div className="w-full h-64 ring-1 ring-black/5 dark:ring-white/10 rounded-lg">
         <ResponsiveContainer>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="time" tick={{ fontSize: 10 }} />
             <YAxis
               domain={['auto', 'auto']}
-              tickFormatter={(val) => `$${typeof val === 'number' ? val.toFixed(0) : val}`}
+              tickFormatter={(val) => (typeof val === 'number' ? fmtUSD(val) : String(val))}
             />
             <Tooltip
               labelFormatter={(label) => `Time: ${label}`}
-              formatter={(val) => {
-                // Fix the type error by checking if val is a number before calling toFixed
-                return [`$${typeof val === 'number' ? val.toFixed(2) : val}`, 'Close'];
-              }}
+              formatter={(val) => [typeof val === 'number' ? fmtUSD(val) : String(val), 'Close']}
             />
             <Line type="monotone" dataKey="close" stroke="#3B82F6" dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
-    </section>
+    </motion.section>
   );
 }

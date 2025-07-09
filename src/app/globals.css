@@ -7,6 +7,15 @@ html {
   scroll-behavior: smooth;
 }
 
+/* prettier-ignore */
+::-webkit-scrollbar {
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: theme(colors.primaryFrom / 0.4);
+  border-radius: 8px;
+}
+
 /* PDF Report Print Styles */
 .print-report-container.print-mode {
   display: block !important;
@@ -34,5 +43,35 @@ html {
     display: block !important;
     position: static !important;
     z-index: auto !important;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg;
+  }
+  .btn-primary {
+    @apply btn bg-gradient-to-r from-primaryFrom to-primaryTo text-white hover:from-primaryFrom/90 hover:to-primaryTo/90 active:scale-95 shadow-lg;
+  }
+  .btn-ghost {
+    @apply btn text-primaryFrom dark:text-primaryTo hover:bg-primaryFrom/10 dark:hover:bg-primaryTo/10;
+  }
+  .input {
+    @apply border rounded-md px-3 py-2 focus:ring-2 focus:ring-primaryFrom focus:border-primaryFrom dark:bg-gray-800 dark:border-gray-600;
+  }
+  .card {
+    @apply bg-cardLight/60 dark:bg-cardDark/60 ring-1 ring-black/5 dark:ring-white/10 rounded-2xl p-8 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-shadow duration-300;
+  }
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-success {
+    @apply badge bg-green-100 text-green-800;
+  }
+  .badge-error {
+    @apply badge bg-red-100 text-red-800;
+  }
+  .badge-neutral {
+    @apply badge bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200;
   }
 }

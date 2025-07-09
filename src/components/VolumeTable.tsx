@@ -2,6 +2,7 @@
 
 import { format } from 'date-fns';
 import type { HistoryData } from '@/types/api';
+import { fmtUSD } from '@/lib/format';
 
 interface Props {
   data: HistoryData[];
@@ -46,9 +47,15 @@ export default function VolumeTable({ data }: Props) {
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b border-gray-200 dark:border-gray-600">
-              <th className="text-left py-2 text-gray-500 dark:text-gray-400">Time</th>
-              <th className="text-right py-2 text-gray-500 dark:text-gray-400">Volume</th>
-              <th className="text-right py-2 text-gray-500 dark:text-gray-400">Price</th>
+              <th scope="col" className="text-left py-2 text-gray-500 dark:text-gray-400">
+                Time
+              </th>
+              <th scope="col" className="text-right py-2 text-gray-500 dark:text-gray-400">
+                Volume
+              </th>
+              <th scope="col" className="text-right py-2 text-gray-500 dark:text-gray-400">
+                Price
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -61,7 +68,7 @@ export default function VolumeTable({ data }: Props) {
                   {formatVolume(row.volume)}
                 </td>
                 <td className="py-2 text-right font-mono text-gray-900 dark:text-white">
-                  ${row.close.toFixed(6)}
+                  {fmtUSD(row.close)}
                 </td>
               </tr>
             ))}

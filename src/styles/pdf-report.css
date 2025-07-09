@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+h1,
+h2 {
+  @apply font-bold text-primaryFrom;
+}
+
+table thead {
+  @apply bg-primaryFrom/5 text-primaryFrom;
+}
+
+table {
+  @apply text-xs leading-4;
+}
+
+tr:nth-child(even) {
+  @apply bg-surfaceLight;
+}

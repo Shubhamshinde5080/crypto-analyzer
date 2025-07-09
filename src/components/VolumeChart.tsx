@@ -3,10 +3,13 @@
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { format } from 'date-fns';
 import type { HistoryData } from '@/types/api';
+import { motion } from 'framer-motion';
 
 interface Props {
   data: HistoryData[];
 }
+const fadeSlide = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } };
+
 export default function VolumeChart({ data }: Props) {
   if (!data.length) return null;
   const chartData = data.map((d) => ({
@@ -15,9 +18,14 @@ export default function VolumeChart({ data }: Props) {
   }));
 
   return (
-    <section className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
+    <motion.section
+      className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8"
+      variants={fadeSlide}
+      initial="hidden"
+      animate="show"
+    >
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Volume Chart</h3>
-      <div className="w-full h-64">
+      <div className="w-full h-64 ring-1 ring-black/5 dark:ring-white/10 rounded-lg">
         <ResponsiveContainer>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -31,6 +39,6 @@ export default function VolumeChart({ data }: Props) {
           </BarChart>
         </ResponsiveContainer>
       </div>
-    </section>
+    </motion.section>
   );
 }
