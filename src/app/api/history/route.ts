@@ -3,12 +3,9 @@
 import { parseISO } from 'date-fns';
 import { NextRequest, NextResponse } from 'next/server';
 import { cacheManager } from '@/lib/cache';
-import {
-  fetchWithRetry,
-  APIError,
-  coinGeckoRateLimiter,
-  validateEnvVars,
-} from '@/lib/error-handling';
+import { APIError } from '@/lib/error-handling';
+import { getKlines } from '@/lib/binanceREST';
+import mockHistory from '@/lib/mockHistory';
 import type { HistoryData } from '@/types/api';
 
 type Bucket = {
@@ -22,11 +19,6 @@ type Bucket = {
 };
 
 type ErrorResponse = { error: string; details?: string };
-
-type CoinGeckoResponse = {
-  prices: [number, number][];
-  total_volumes: [number, number][];
-};
 
 function parseInterval(interval: string): { value: number; unit: 'm' | 'h' | 'd' } {
   const match = /^(\d+)([mhd])$/.exec(interval);
@@ -51,9 +43,6 @@ function intervalToMs({ value, unit }: { value: number; unit: 'm' | 'h' | 'd' })
 
 export async function GET(request: NextRequest) {
   try {
-    // Validate environment variables
-    validateEnvVars(['COINGECKO_API_URL']);
-
     const { searchParams } = new URL(request.url);
     const coin = searchParams.get('coin');
     const from = searchParams.get('from');
@@ -66,6 +55,11 @@ export async function GET(request: NextRequest) {
         { error: 'Missing required query params: coin, from, to, interval' } as ErrorResponse,
         { status: 400 }
       );
+    }
+
+    // Use mock data in test or when explicitly enabled
+    if (process.env.NODE_ENV === 'test' || process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true') {
+      return NextResponse.json(mockHistory);
     }
 
     // 2. Check cache first
@@ -104,40 +98,23 @@ export async function GET(request: NextRequest) {
     console.log(`Requested interval: ${interval}, parsed as:`, intervalObj);
     console.log(`Bucket size in ms: ${bucketMs} (${bucketMs / 1000} seconds)`);
 
-    // 5. Apply rate limiting
-    await coinGeckoRateLimiter.waitIfNeeded();
-
-    // 6. Fetch raw data from CoinGecko with retry logic
-    const base = process.env.COINGECKO_API_URL || 'https://api.coingecko.com/api/v3';
-    const fromTs = Math.floor(fromDate.getTime() / 1000);
-    const toTs = Math.floor(toDate.getTime() / 1000);
-    const url =
-      `${base}/coins/${encodeURIComponent(coin)}/market_chart/range` +
-      `?vs_currency=usd&from=${fromTs}&to=${toTs}`;
-
-    console.log(`Fetching from CoinGecko: ${url}`);
-    const apiRes = await fetchWithRetry(url, {}, { maxRetries: 3, baseDelay: 1000 });
-    const { prices = [], total_volumes: volumes = [] } = (await apiRes.json()) as CoinGeckoResponse;
-
-    console.log(`CoinGecko returned ${prices.length} price points`);
-    if (prices.length > 0) {
-      console.log(`First price point: ${new Date(prices[0][0]).toISOString()}`);
-      console.log(`Last price point: ${new Date(prices[prices.length - 1][0]).toISOString()}`);
+    // 5. Fetch raw data from Binance REST
+    let klines;
+    try {
+      klines = await getKlines(coin, fromDate.getTime(), toDate.getTime(), interval);
+    } catch (err) {
+      console.error('Binance fetch failed:', err);
+      return NextResponse.json({ error: 'Failed to fetch data from Binance' } as ErrorResponse, {
+        status: 502,
+      });
     }
 
-    // 7. Build a map for volume lookups
-    const volMap = new Map(volumes.map(([timestamp, volume]) => [timestamp, volume]));
-
-    // 8. Bucket data by intervals
-    const buckets: Record<string, { prices: number[]; vols: number[] }> = {};
-    prices.forEach(([timestamp, price]) => {
-      // Convert timestamp to bucket key by rounding down to nearest interval
-      const bucketKey = String(Math.floor(timestamp / bucketMs) * bucketMs);
-      if (!buckets[bucketKey]) {
-        buckets[bucketKey] = { prices: [], vols: [] };
-      }
-      buckets[bucketKey].prices.push(price);
-      buckets[bucketKey].vols.push(volMap.get(timestamp) ?? 0);
+    // 6. Bucket raw klines by the requested interval
+    const buckets: Record<string, typeof klines> = {};
+    klines.forEach((k) => {
+      const bucketKey = String(Math.floor(k.timestamp / bucketMs) * bucketMs);
+      if (!buckets[bucketKey]) buckets[bucketKey] = [];
+      buckets[bucketKey].push(k);
     });
 
     console.log(`Created ${Object.keys(buckets).length} buckets for ${interval} interval`);
@@ -150,13 +127,14 @@ export async function GET(request: NextRequest) {
     const result: Bucket[] = [];
     for (let i = 0; i < sortedKeys.length; i++) {
       const timestamp = sortedKeys[i];
-      const { prices: ps, vols: vs } = buckets[String(timestamp)];
+      const rows = buckets[String(timestamp)];
+      rows.sort((a, b) => a.timestamp - b.timestamp);
 
-      const open = ps[0];
-      const close = ps[ps.length - 1];
-      const high = Math.max(...ps);
-      const low = Math.min(...ps);
-      const volume = vs.reduce((sum, x) => sum + x, 0);
+      const open = rows[0].open;
+      const close = rows[rows.length - 1].close;
+      const high = Math.max(...rows.map((r) => r.high));
+      const low = Math.min(...rows.map((r) => r.low));
+      const volume = rows.reduce((sum, r) => sum + r.volume, 0);
 
       const prevClose = i > 0 ? result[i - 1].close : null;
       const pctChange = prevClose !== null ? ((close - prevClose) / prevClose) * 100 : null;

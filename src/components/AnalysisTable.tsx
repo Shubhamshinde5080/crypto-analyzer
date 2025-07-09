@@ -33,9 +33,9 @@ export default function AnalysisTable({ data }: Props) {
       animate="show"
     >
       <div className="overflow-auto">
-        <table className="min-w-[720px] sm:min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <table className="min-w-[720px] sm:min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 shadow-sm">
-            <tr>
+            <tr className="divide-x divide-gray-200 dark:divide-gray-700">
               {['Time', 'Open', 'High', 'Low', 'Close', 'Volume', '% Change'].map((h) => (
                 <th
                   key={h}
@@ -51,7 +51,7 @@ export default function AnalysisTable({ data }: Props) {
             {slice.map((row) => (
               <tr
                 key={row.timestamp}
-                className="hover:bg-gray-50/75 dark:hover:bg-gray-700/75 transition-colors"
+                className="hover:bg-gray-50/75 dark:hover:bg-gray-700/75 transition-colors divide-x divide-gray-200 dark:divide-gray-700"
               >
                 <td className="px-4 py-2 text-sm text-gray-900 dark:text-white whitespace-nowrap">
                   {format(new Date(row.timestamp), 'MMM dd, HH:mm')}

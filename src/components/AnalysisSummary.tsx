@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowUp, ArrowDown, TrendingUp, TrendingDown } from 'lucide-react';
 import type { HistoryData } from '@/types/api';
 import { fmtUSD } from '@/lib/format';
+import { useLivePrice } from '@/hooks/useLivePrice';
 
 const fadeSlide = {
   hidden: { opacity: 0, y: 16 },
@@ -16,6 +17,7 @@ interface AnalysisSummaryProps {
 }
 
 export default function AnalysisSummary({ data, coin }: AnalysisSummaryProps) {
+  const live = useLivePrice(coin);
   if (!data.length) return null;
 
   const open = data[0].open;
@@ -54,6 +56,7 @@ export default function AnalysisSummary({ data, coin }: AnalysisSummaryProps) {
     >
       <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
         {coin.toUpperCase()} Analysis Summary
+        <span className="ml-2 text-xs text-blue-500">{live ? `(Live: ${fmtUSD(live)})` : ''}</span>
       </h2>
 
       <div className="grid gap-6 md:grid-cols-2">
