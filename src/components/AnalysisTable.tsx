@@ -8,6 +8,7 @@ import { ArrowUp, ArrowDown } from 'lucide-react';
 import Badge from './Badge';
 import { motion } from 'framer-motion';
 
+
 const fadeSlide = {
   hidden: { opacity: 0, y: 16 },
   show: { opacity: 1, y: 0 },

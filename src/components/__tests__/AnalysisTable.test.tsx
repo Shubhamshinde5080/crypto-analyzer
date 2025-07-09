@@ -76,8 +76,12 @@ describe('AnalysisTable', () => {
   it('shows positive changes in green with up arrow', () => {
     renderWithTheme(<AnalysisTable data={mockHistoryData} />);
 
+
     const badge = screen.getByText('2.50%').closest('span.badge-success');
     expect(badge).toBeInTheDocument();
+    const positiveChange = screen.getByText('2.50%');
+    const icon = positiveChange.previousSibling as HTMLElement;
+    expect(icon).toHaveClass('text-green-600');
   });
 
   it('shows negative changes in red with down arrow', () => {
@@ -85,6 +89,9 @@ describe('AnalysisTable', () => {
 
     const negBadge = screen.getByText('1.20%').closest('span.badge-error');
     expect(negBadge).toBeInTheDocument();
+    const negativeChange = screen.getByText('1.20%');
+    const negIcon = negativeChange.previousSibling as HTMLElement;
+    expect(negIcon).toHaveClass('text-red-600');
   });
 
   it('formats dates correctly', () => {

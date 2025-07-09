@@ -5,6 +5,7 @@ import { fmtUSD } from '@/lib/format';
 import { ArrowUp, ArrowDown, TrendingUp, TrendingDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+
 const fadeSlide = {
   hidden: { opacity: 0, y: 16 },
   show: { opacity: 1, y: 0 },
