@@ -103,25 +103,18 @@ export async function GET(request: NextRequest) {
     try {
       klines = await getKlines(coin, fromDate.getTime(), toDate.getTime(), interval);
     } catch (err) {
-      console.error('Binance fetch failed, using mock history:', err);
-      return NextResponse.json(mockHistory);
+      console.error('Binance fetch failed:', err);
+      return NextResponse.json({ error: 'Failed to fetch data from Binance' } as ErrorResponse, {
+        status: 502,
+      });
     }
 
-    // 6. Build a map for volume lookups
-    const volMap = new Map(klines.map((k) => [k.timestamp, k.volume]));
-
-    const prices = klines.map((k) => [k.timestamp, k.close]);
-
-    // 8. Bucket data by intervals
-    const buckets: Record<string, { prices: number[]; vols: number[] }> = {};
-    prices.forEach(([timestamp, price]) => {
-      // Convert timestamp to bucket key by rounding down to nearest interval
-      const bucketKey = String(Math.floor(timestamp / bucketMs) * bucketMs);
-      if (!buckets[bucketKey]) {
-        buckets[bucketKey] = { prices: [], vols: [] };
-      }
-      buckets[bucketKey].prices.push(price);
-      buckets[bucketKey].vols.push(volMap.get(timestamp) ?? 0);
+    // 6. Bucket raw klines by the requested interval
+    const buckets: Record<string, typeof klines> = {};
+    klines.forEach((k) => {
+      const bucketKey = String(Math.floor(k.timestamp / bucketMs) * bucketMs);
+      if (!buckets[bucketKey]) buckets[bucketKey] = [];
+      buckets[bucketKey].push(k);
     });
 
     console.log(`Created ${Object.keys(buckets).length} buckets for ${interval} interval`);
@@ -134,13 +127,14 @@ export async function GET(request: NextRequest) {
     const result: Bucket[] = [];
     for (let i = 0; i < sortedKeys.length; i++) {
       const timestamp = sortedKeys[i];
-      const { prices: ps, vols: vs } = buckets[String(timestamp)];
+      const rows = buckets[String(timestamp)];
+      rows.sort((a, b) => a.timestamp - b.timestamp);
 
-      const open = ps[0];
-      const close = ps[ps.length - 1];
-      const high = Math.max(...ps);
-      const low = Math.min(...ps);
-      const volume = vs.reduce((sum, x) => sum + x, 0);
+      const open = rows[0].open;
+      const close = rows[rows.length - 1].close;
+      const high = Math.max(...rows.map((r) => r.high));
+      const low = Math.min(...rows.map((r) => r.low));
+      const volume = rows.reduce((sum, r) => sum + r.volume, 0);
 
       const prevClose = i > 0 ? result[i - 1].close : null;
       const pctChange = prevClose !== null ? ((close - prevClose) / prevClose) * 100 : null;
