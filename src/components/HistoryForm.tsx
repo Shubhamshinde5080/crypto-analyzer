@@ -78,7 +78,7 @@ export default function HistoryForm({ coin }: HistoryFormProps) {
   };
 
   return (
-    <div className="bg-white shadow-lg rounded-lg p-6 mb-6">
+    <div className="card mb-6">
       <h2 className="text-xl font-semibold mb-4">Historical Data Analysis</h2>
 
       {errors.general && (
@@ -93,7 +93,7 @@ export default function HistoryForm({ coin }: HistoryFormProps) {
 
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <div>
-          <label htmlFor="from-date" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="from-date" className="block text-sm text-gray-500 mb-2">
             From Date & Time:
           </label>
           <input
@@ -102,9 +102,7 @@ export default function HistoryForm({ coin }: HistoryFormProps) {
             required
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className={`border p-3 rounded-lg w-full max-w-xs focus:ring-2 focus:ring-blue-500 ${
-              errors.from ? 'border-red-500' : 'border-gray-300'
-            }`}
+            className={`input w-full max-w-xs ${errors.from ? 'border-red-500' : 'border-gray-300'}`}
             aria-describedby={errors.from ? 'from-error' : undefined}
             aria-invalid={!!errors.from}
           />
@@ -116,7 +114,7 @@ export default function HistoryForm({ coin }: HistoryFormProps) {
         </div>
 
         <div>
-          <label htmlFor="to-date" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="to-date" className="block text-sm text-gray-500 mb-2">
             To Date & Time:
           </label>
           <input
@@ -125,9 +123,7 @@ export default function HistoryForm({ coin }: HistoryFormProps) {
             required
             value={to}
             onChange={(e) => setTo(e.target.value)}
-            className={`border p-3 rounded-lg w-full max-w-xs focus:ring-2 focus:ring-blue-500 ${
-              errors.to ? 'border-red-500' : 'border-gray-300'
-            }`}
+            className={`input w-full max-w-xs ${errors.to ? 'border-red-500' : 'border-gray-300'}`}
             aria-describedby={errors.to ? 'to-error' : undefined}
             aria-invalid={!!errors.to}
           />
@@ -138,14 +134,14 @@ export default function HistoryForm({ coin }: HistoryFormProps) {
           )}
         </div>
         <div>
-          <label htmlFor="interval" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="interval" className="block text-sm text-gray-500 mb-2">
             Time Interval:
           </label>
           <select
             id="interval"
             value={interval}
             onChange={(e) => setInterval(e.target.value as IntervalType)}
-            className="border border-gray-300 p-3 rounded-lg w-full max-w-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="input w-full max-w-xs"
             aria-describedby="interval-help"
           >
             <option value="15m">15 minutes</option>
@@ -163,7 +159,7 @@ export default function HistoryForm({ coin }: HistoryFormProps) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn-primary w-full sm:w-auto"
           aria-describedby="submit-help"
         >
           {isSubmitting ? 'Analyzing...' : 'Analyze Historical Data'}

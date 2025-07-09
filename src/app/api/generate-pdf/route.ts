@@ -2,6 +2,7 @@
 
 import { NextRequest } from 'next/server';
 import { jsPDF } from 'jspdf';
+import { fmtUSD } from '@/lib/format';
 
 type ErrorResponse = { error: string; details?: string };
 
@@ -74,15 +75,11 @@ function generatePDFReport(coin: string, from: string, to: string, data: History
     doc.text('Summary Statistics:', 20, 65);
 
     doc.setFontSize(10);
-    doc.text(`Start Price: $${startPrice.toFixed(2)}`, 20, 80);
-    doc.text(`End Price: $${endPrice.toFixed(2)}`, 20, 90);
-    doc.text(
-      `Price Change: $${priceChange.toFixed(2)} (${priceChangePercent.toFixed(2)}%)`,
-      20,
-      100
-    );
-    doc.text(`Min Price: $${minPrice.toFixed(2)}`, 20, 110);
-    doc.text(`Max Price: $${maxPrice.toFixed(2)}`, 20, 120);
+    doc.text(`Start Price: ${fmtUSD(startPrice)}`, 20, 80);
+    doc.text(`End Price: ${fmtUSD(endPrice)}`, 20, 90);
+    doc.text(`Price Change: ${fmtUSD(priceChange)} (${priceChangePercent.toFixed(2)}%)`, 20, 100);
+    doc.text(`Min Price: ${fmtUSD(minPrice)}`, 20, 110);
+    doc.text(`Max Price: ${fmtUSD(maxPrice)}`, 20, 120);
     doc.text(`Average Volume: ${avgVolume.toLocaleString()}`, 20, 130);
     doc.text(`Total Data Points: ${data.length}`, 20, 140);
   }
@@ -108,10 +105,10 @@ function generatePDFReport(coin: string, from: string, to: string, data: History
     const date = new Date(row.timestamp).toLocaleDateString();
 
     doc.text(date, 20, y);
-    doc.text(`$${row.open.toFixed(2)}`, 50, y);
-    doc.text(`$${row.high.toFixed(2)}`, 70, y);
-    doc.text(`$${row.low.toFixed(2)}`, 90, y);
-    doc.text(`$${row.close.toFixed(2)}`, 110, y);
+    doc.text(fmtUSD(row.open), 50, y);
+    doc.text(fmtUSD(row.high), 70, y);
+    doc.text(fmtUSD(row.low), 90, y);
+    doc.text(fmtUSD(row.close), 110, y);
     doc.text(row.volume.toLocaleString(), 130, y);
     doc.text(row.pctChange ? `${row.pctChange.toFixed(2)}%` : 'N/A', 160, y);
   });
