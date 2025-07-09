@@ -34,7 +34,8 @@ export default function CoinList() {
           return;
         }
 
-        const base = process.env.NEXT_PUBLIC_COINGECKO_API_URL || 'https://api.coingecko.com/api/v3';
+        const base =
+          process.env.NEXT_PUBLIC_COINGECKO_API_URL || 'https://api.coingecko.com/api/v3';
         const url = `${base}/coins/markets`;
         const params = new URLSearchParams({
           vs_currency: 'usd',
@@ -50,15 +51,10 @@ export default function CoinList() {
         setCoins(data);
       } catch (error: unknown) {
         console.error('Error fetching coins:', error);
-
         // Fall back to mock data if API fails
         console.log('Falling back to mock data...');
-
-      } catch (err: any) {
-        console.error('Error fetching coins:', err);
-        // fallback to mock data
         setCoins(mockCoins);
-        setError(err as Error);
+        setError(error as Error);
       } finally {
         setLoading(false);
       }
@@ -67,9 +63,10 @@ export default function CoinList() {
   }, []);
 
   /* ───────── filters & pagination ──────── */
-  const filtered = coins.filter((c) =>
-    c.name.toLowerCase().includes(query.toLowerCase()) ||
-    c.symbol.toLowerCase().includes(query.toLowerCase())
+  const filtered = coins.filter(
+    (c) =>
+      c.name.toLowerCase().includes(query.toLowerCase()) ||
+      c.symbol.toLowerCase().includes(query.toLowerCase())
   );
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
   const slice = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
@@ -81,79 +78,68 @@ export default function CoinList() {
 
       {/* search */}
       <div className="mb-6 max-w-md">
-        <label htmlFor="coin-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label
+          htmlFor="coin-search"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+        >
           Search Cryptocurrencies
         </label>
         <input
           id="coin-search"
           type="text"
           value={query}
-          onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setPage(1);
+          }}
           placeholder="Search coins by name or symbol…"
           className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Filter the list by name or symbol</p>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          Filter the list by name or symbol
+        </p>
       </div>
 
       <LoadingState loading={loading} error={error} loadingComponent={<Skeleton />}>
         <div className="overflow-auto">
-          <table
-            className="min-w-[720px] sm:min-w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg"
-            role="table"
-          >
-
           <table className="min-w-[720px] sm:min-w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
-
             <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
               <tr>
-                {['Rank','Name','Price (USD)','Volume (24h)',''].map((h) => (
-                  <th key={h} scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                {['Rank', 'Name', 'Price (USD)', 'Volume (24h)', ''].map((h) => (
+                  <th
+                    key={h}
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                  >
                     {h || 'Actions'}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {pageSlice.map((c: Coin, i: number) => (
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              {slice.map((c, i) => (
                 <tr
                   key={c.id}
                   className="hover:bg-white/70 dark:hover:bg-slate-700/60 transition-colors"
                 >
-
-
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {slice.map((c, i) => (
-                <tr key={c.id} className="hover:bg-white/70 dark:hover:bg-slate-700/60 transition-colors">
-
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {(page - 1) * PER_PAGE + i + 1}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap flex items-center gap-3">
-                    <Image src={c.image} alt={`${c.name} logo`} width={32} height={32} className="rounded-full" />
+                    <Image
+                      src={c.image}
+                      alt={`${c.name} logo`}
+                      width={32}
+                      height={32}
+                      className="rounded-full"
+                    />
                     <div>
                       <p className="text-sm font-medium text-gray-900 dark:text-white">{c.name}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 uppercase">{c.symbol}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 uppercase">
+                        {c.symbol}
+                      </p>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono text-gray-900 dark:text-white">
-
-
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-
-
-                    {c.current_price !== undefined && c.current_price !== null
-                      ? fmtUSD(c.current_price)
-                      : 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono text-gray-900 dark:text-white">
-                    ${c.total_volume?.toLocaleString() || 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Link
-                      href={`/coins/${c.id}/history`}
-                      className="btn btn-primary"
-                      aria-label={`View historical data for ${c.name}`}
-                    >
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono">
                     {c.current_price != null ? fmtUSD(c.current_price) : 'N/A'}
                   </td>
@@ -161,7 +147,11 @@ export default function CoinList() {
                     {c.total_volume != null ? `$${c.total_volume.toLocaleString()}` : 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <Link href={`/coins/${c.id}/history`} className="btn btn-primary" aria-label={`View historical data for ${c.name}`}>
+                    <Link
+                      href={`/coins/${c.id}/history`}
+                      className="btn btn-primary"
+                      aria-label={`View historical data for ${c.name}`}
+                    >
                       View History
                     </Link>
                   </td>
@@ -174,31 +164,24 @@ export default function CoinList() {
         {/* pagination */}
         <nav className="flex justify-center items-center gap-4 mt-6" aria-label="Pagination">
           <button
-            className="btn btn-ghost disabled:opacity-50"
+            className="btn btn-ghost disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="btn btn-ghost disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Go to previous page"
           >
             Previous
           </button>
-          <span className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300" aria-current="page">
-
-          >Prev</button>
           <span className="text-sm text-gray-700 dark:text-gray-300">
             Page {page} of {totalPages}
           </span>
           <button
-            className="btn btn-ghost disabled:opacity-50"
+            className="btn btn-ghost disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className="btn btn-ghost disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Go to next page"
           >
             Next
           </button>
-
-          >Next</button>
         </nav>
       </LoadingState>
     </div>

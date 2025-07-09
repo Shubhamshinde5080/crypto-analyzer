@@ -1,10 +1,6 @@
 import type { Metadata } from 'next';
-import ErrorBoundary from '@/components/ErrorBoundary';
-
 import { ThemeProvider } from 'next-themes';
-
-import ThemeProvider from '@/components/ThemeProvider';
-
+import ErrorBoundary from '@/components/ErrorBoundary';
 import Header from '@/components/Header';
 import './globals.css';
 
@@ -28,11 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full font-sans">
       <body className="antialiased min-h-screen h-full bg-gradient-to-br from-primaryFrom to-primaryTo dark:from-gray-900 dark:to-slate-800">
-
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-
-        <ThemeProvider>
-
           <ErrorBoundary>
             <Header />
             <div className="min-h-screen text-gray-900 dark:text-gray-100">
