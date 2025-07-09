@@ -76,7 +76,7 @@ export default function PrintPage() {
   }
 
   return (
-    <div className="bg-white text-black">
+    <div className="bg-white text-black prose prose-sm max-w-none">
       <LoadingState loading={loading} error={error}>
         <PDFReport coin={coin} from={from} to={to} data={data} />
       </LoadingState>

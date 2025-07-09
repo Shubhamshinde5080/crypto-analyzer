@@ -17,6 +17,7 @@ import VolumeChart from '@/components/VolumeChart';
 import PDFReport from '@/components/PDFReport';
 import ErrorBoundary, { APIErrorFallback } from '@/components/ErrorBoundary';
 import { LoadingState } from '@/components/LoadingState';
+import Skeleton from '@/components/Skeleton';
 import { fetchWithRetry, APIError } from '@/lib/error-handling';
 import type { HistoryData } from '@/types/api';
 
@@ -132,14 +133,16 @@ export default function HistoryResultsPage() {
         <LoadingState loading={loading} error={error}>
           <ErrorBoundary fallback={APIErrorFallback}>
             <h1 className="sr-only">{coin} analysis results</h1>
-            <AnalysisSummary data={data} coin={coin} />
-
-            <section className="grid gap-6 lg:grid-cols-2 mb-8">
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div className="sm:col-span-2">
+                <AnalysisSummary data={data} coin={coin} />
+              </div>
               <PriceChart data={data} />
               <VolumeChart data={data} />
-            </section>
-
-            <AnalysisTable data={data} />
+              <div className="sm:col-span-2">
+                <AnalysisTable data={data} />
+              </div>
+            </div>
           </ErrorBoundary>
         </LoadingState>
       </main>
@@ -148,18 +151,6 @@ export default function HistoryResultsPage() {
       <div ref={printRef} className="hidden">
         <PDFReport coin={coin} from={from ?? ''} to={to ?? ''} data={data} />
       </div>
-    </div>
-  );
-}
-
-/* ───────────── simple skeleton ───────────── */
-function Skeleton() {
-  return (
-    <div className="animate-pulse space-y-4">
-      <div className="h-8 w-1/3 bg-gray-200 dark:bg-gray-700 rounded" />
-      <div className="h-56 bg-gray-200 dark:bg-gray-700 rounded" />
-      <div className="h-56 bg-gray-200 dark:bg-gray-700 rounded" />
-      <div className="h-96 bg-gray-200 dark:bg-gray-700 rounded" />
     </div>
   );
 }

@@ -76,17 +76,15 @@ describe('AnalysisTable', () => {
   it('shows positive changes in green with up arrow', () => {
     renderWithTheme(<AnalysisTable data={mockHistoryData} />);
 
-    const positiveChange = screen.getByText('2.50%');
-    const icon = positiveChange.previousSibling as HTMLElement;
-    expect(icon).toHaveClass('text-green-600');
+    const badge = screen.getByText('2.50%').closest('span.badge-success');
+    expect(badge).toBeInTheDocument();
   });
 
   it('shows negative changes in red with down arrow', () => {
     renderWithTheme(<AnalysisTable data={mockHistoryData} />);
 
-    const negativeChange = screen.getByText('1.20%');
-    const negIcon = negativeChange.previousSibling as HTMLElement;
-    expect(negIcon).toHaveClass('text-red-600');
+    const negBadge = screen.getByText('1.20%').closest('span.badge-error');
+    expect(negBadge).toBeInTheDocument();
   });
 
   it('formats dates correctly', () => {
@@ -138,6 +136,6 @@ describe('AnalysisTable', () => {
     renderWithTheme(<AnalysisTable data={mockHistoryData} />);
 
     const tableContainer = screen.getByRole('table').closest('div');
-    expect(tableContainer).toHaveClass('overflow-x-auto');
+    expect(tableContainer).toHaveClass('overflow-auto');
   });
 });

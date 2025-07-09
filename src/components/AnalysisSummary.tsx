@@ -2,67 +2,13 @@
 
 import type { HistoryData } from '@/types/api';
 import { fmtUSD } from '@/lib/format';
+import { ArrowUp, ArrowDown, TrendingUp, TrendingDown } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-// Create inline SVGs for the icons
-const ArrowUpIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    {...props}
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-  </svg>
-);
-
-const ArrowDownIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    {...props}
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-  </svg>
-);
-
-const ArrowTrendingUpIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    {...props}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"
-    />
-  </svg>
-);
-
-const ArrowTrendingDownIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    {...props}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M2.25 6L9 12.75l4.286-4.286a11.948 11.948 0 014.306 6.43l.776 2.898m0 0l3.182-5.511m-3.182 5.51l-5.511-3.181"
-    />
-  </svg>
-);
+const fadeSlide = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0 },
+};
 
 interface AnalysisSummaryProps {
   data: HistoryData[];
@@ -100,7 +46,12 @@ export default function AnalysisSummary({ data, coin }: AnalysisSummaryProps) {
         : `${(v / 1e3).toFixed(1)}K`;
 
   return (
-    <section className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
+    <motion.section
+      className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8"
+      variants={fadeSlide}
+      initial="hidden"
+      animate="show"
+    >
       <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
         {coin.toUpperCase()} Analysis Summary
       </h2>
@@ -119,12 +70,10 @@ export default function AnalysisSummary({ data, coin }: AnalysisSummaryProps) {
               </p>
             </div>
             <div className={`${positive ? 'text-green-600' : 'text-red-600'} flex items-center`}>
-              {positive ? (
-                <ArrowTrendingUpIcon className="h-6 w-6" />
-              ) : (
-                <ArrowTrendingDownIcon className="h-6 w-6" />
-              )}
-              <span className="ml-2 font-semibold">{fmtPct(overallChange)}</span>
+              {positive ? <TrendingUp className="h-6 w-6" /> : <TrendingDown className="h-6 w-6" />}
+              <span className="ml-2 font-semibold" aria-live="polite">
+                {fmtPct(overallChange)}
+              </span>
             </div>
           </div>
         </div>
@@ -139,16 +88,16 @@ export default function AnalysisSummary({ data, coin }: AnalysisSummaryProps) {
           <Stat
             label="Best Gain"
             value={fmtPct(bestGain)}
-            icon={<ArrowUpIcon className="h-5 w-5 text-green-600" />}
+            icon={<ArrowUp className="h-5 w-5 text-green-600" />}
           />
           <Stat
             label="Worst Loss"
             value={fmtPct(worstLoss)}
-            icon={<ArrowDownIcon className="h-5 w-5 text-red-600" />}
+            icon={<ArrowDown className="h-5 w-5 text-red-600" />}
           />
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 }
 

@@ -10,11 +10,15 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#3182ce',
-        secondary: '#2d3748',
+        primary: '#2563eb',
+        accent: '#8b5cf6',
+        surface: {
+          DEFAULT: '#f9fafb',
+          dark: '#1f2937',
+        },
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       spacing: {
         18: '4.5rem',

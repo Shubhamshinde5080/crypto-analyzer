@@ -47,9 +47,15 @@ export default function VolumeTable({ data }: Props) {
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b border-gray-200 dark:border-gray-600">
-              <th className="text-left py-2 text-gray-500 dark:text-gray-400">Time</th>
-              <th className="text-right py-2 text-gray-500 dark:text-gray-400">Volume</th>
-              <th className="text-right py-2 text-gray-500 dark:text-gray-400">Price</th>
+              <th scope="col" className="text-left py-2 text-gray-500 dark:text-gray-400">
+                Time
+              </th>
+              <th scope="col" className="text-right py-2 text-gray-500 dark:text-gray-400">
+                Volume
+              </th>
+              <th scope="col" className="text-right py-2 text-gray-500 dark:text-gray-400">
+                Price
+              </th>
             </tr>
           </thead>
           <tbody>
