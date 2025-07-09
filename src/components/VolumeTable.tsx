@@ -2,6 +2,7 @@
 
 import { format } from 'date-fns';
 import type { HistoryData } from '@/types/api';
+import { fmtUSD } from '@/lib/format';
 
 interface Props {
   data: HistoryData[];
@@ -61,7 +62,7 @@ export default function VolumeTable({ data }: Props) {
                   {formatVolume(row.volume)}
                 </td>
                 <td className="py-2 text-right font-mono text-gray-900 dark:text-white">
-                  ${row.close.toFixed(6)}
+                  {fmtUSD(row.close)}
                 </td>
               </tr>
             ))}

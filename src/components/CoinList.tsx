@@ -7,6 +7,7 @@ import { LoadingState } from '@/components/LoadingState';
 import { fetchWithRetry, APIError } from '@/lib/error-handling';
 import mockCoins from '@/lib/mockData';
 import type { Coin } from '@/types/api';
+import { fmtUSD } from '@/lib/format';
 
 const PER_PAGE = 20;
 
@@ -162,7 +163,9 @@ export default function CoinList() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    ${c.current_price?.toLocaleString() || 'N/A'}
+                    {c.current_price !== undefined && c.current_price !== null
+                      ? fmtUSD(c.current_price)
+                      : 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     ${c.total_volume?.toLocaleString() || 'N/A'}

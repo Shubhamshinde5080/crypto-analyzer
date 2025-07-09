@@ -4,6 +4,7 @@ import PriceChart from './PriceChart';
 import VolumeTable from './VolumeTable';
 import { format } from 'date-fns';
 import type { HistoryData } from '@/types/api';
+import { fmtUSD } from '@/lib/format';
 import '@/styles/pdf.css';
 
 interface PDFReportProps {
@@ -238,28 +239,16 @@ export default function PDFReport({ coin, from, to, data }: PDFReportProps) {
                           {format(new Date(row.timestamp), 'MM-dd HH:mm')}
                         </td>
                         <td className="border border-gray-300 px-1 py-1 text-right">
-                          {row.open.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
+                          {fmtUSD(row.open)}
                         </td>
                         <td className="border border-gray-300 px-1 py-1 text-right">
-                          {row.high.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
+                          {fmtUSD(row.high)}
                         </td>
                         <td className="border border-gray-300 px-1 py-1 text-right">
-                          {row.low.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
+                          {fmtUSD(row.low)}
                         </td>
                         <td className="border border-gray-300 px-1 py-1 text-right">
-                          {row.close.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
+                          {fmtUSD(row.close)}
                         </td>
                         <td className="border border-gray-300 px-1 py-1 text-right">
                           {row.volume.toLocaleString(undefined, { maximumFractionDigits: 0 })}

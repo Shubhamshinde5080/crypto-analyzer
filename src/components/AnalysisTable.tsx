@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import type { HistoryData } from '@/types/api';
+import { fmtUSD } from '@/lib/format';
 
 // Import the arrow icons from the proper path
 const ArrowUpIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -62,10 +63,10 @@ export default function AnalysisTable({ data }: Props) {
                 <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
                   {format(new Date(row.timestamp), 'MMM dd, HH:mm')}
                 </td>
-                <td className="px-4 py-2 text-sm text-right font-mono">{row.open.toFixed(2)}</td>
-                <td className="px-4 py-2 text-sm text-right font-mono">{row.high.toFixed(2)}</td>
-                <td className="px-4 py-2 text-sm text-right font-mono">{row.low.toFixed(2)}</td>
-                <td className="px-4 py-2 text-sm text-right font-mono">{row.close.toFixed(2)}</td>
+                <td className="px-4 py-2 text-sm text-right font-mono">{fmtUSD(row.open)}</td>
+                <td className="px-4 py-2 text-sm text-right font-mono">{fmtUSD(row.high)}</td>
+                <td className="px-4 py-2 text-sm text-right font-mono">{fmtUSD(row.low)}</td>
+                <td className="px-4 py-2 text-sm text-right font-mono">{fmtUSD(row.close)}</td>
                 <td className="px-4 py-2 text-sm text-right font-mono">
                   {row.volume.toLocaleString()}
                 </td>

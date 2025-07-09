@@ -1,6 +1,7 @@
 'use client';
 
 import type { HistoryData } from '@/types/api';
+import { fmtUSD } from '@/lib/format';
 
 // Create inline SVGs for the icons
 const ArrowUpIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -89,11 +90,7 @@ export default function AnalysisSummary({ data, coin }: AnalysisSummaryProps) {
   const bestGain = pctChanges.length ? Math.max(...pctChanges) : 0;
   const worstLoss = pctChanges.length ? Math.min(...pctChanges) : 0;
 
-  const fmt = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-  });
+  const fmt = fmtUSD;
   const fmtPct = (n: number) => `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
   const fmtVol = (v: number) =>
     v >= 1e9
@@ -116,9 +113,9 @@ export default function AnalysisSummary({ data, coin }: AnalysisSummaryProps) {
           <div className="flex items-center justify-between mt-2">
             <div>
               <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                {fmt.format(openPrice)}
+                {fmt(openPrice)}
                 <span className="mx-1">→</span>
-                {fmt.format(closePrice)}
+                {fmt(closePrice)}
               </p>
             </div>
             <div className={`${positive ? 'text-green-600' : 'text-red-600'} flex items-center`}>
@@ -133,10 +130,10 @@ export default function AnalysisSummary({ data, coin }: AnalysisSummaryProps) {
         </div>
         {/* Statistics Grid */}
         <div className="grid grid-cols-2 gap-4">
-          <Stat label="High Price" value={fmt.format(high)} />
-          <Stat label="Low Price" value={fmt.format(low)} />
-          <Stat label="Avg Price" value={fmt.format(avgPrice)} />
-          <Stat label="Price Range" value={fmt.format(high - low)} />
+          <Stat label="High Price" value={fmt(high)} />
+          <Stat label="Low Price" value={fmt(low)} />
+          <Stat label="Avg Price" value={fmt(avgPrice)} />
+          <Stat label="Price Range" value={fmt(high - low)} />
           <Stat label="Avg Volume" value={fmtVol(avgVolume)} />
           <Stat label="Peak Volume" value={fmtVol(peakVolume)} />
           <Stat
