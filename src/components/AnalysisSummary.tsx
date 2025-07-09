@@ -41,6 +41,23 @@ export default function AnalysisSummary({ data, coin }: Props) {
   const high = Math.max(...prices);
   const low = Math.min(...prices);
   const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+
+  const avgVolume = volumes.reduce((a, b) => a + b, 0) / volumes.length;
+  const peakVolume = Math.max(...volumes);
+
+  const pctChanges = data.map((d) => d.pctChange).filter((c): c is number => c !== null);
+  const bestGain = pctChanges.length ? Math.max(...pctChanges) : 0;
+  const worstLoss = pctChanges.length ? Math.min(...pctChanges) : 0;
+
+  const fmt = fmtUSD;
+  const fmtPct = (n: number) => `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
+  const fmtVol = (v: number) =>
+    v >= 1e9
+      ? `${(v / 1e9).toFixed(1)}B`
+      : v >= 1e6
+        ? `${(v / 1e6).toFixed(1)}M`
+        : `${(v / 1e3).toFixed(1)}K`;
+
   const avgVol = volumes.reduce((a, b) => a + b, 0) / volumes.length;
   const peakVol = Math.max(...volumes);
 
@@ -49,6 +66,7 @@ export default function AnalysisSummary({ data, coin }: Props) {
     .filter((x): x is number => x !== null);
   const bestGain = pctList.length ? Math.max(...pctList) : 0;
   const worstLoss = pctList.length ? Math.min(...pctList) : 0;
+
 
   /* ───────── helpers ──────── */
   const pct = (n: number) => `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
@@ -63,10 +81,13 @@ export default function AnalysisSummary({ data, coin }: Props) {
       initial="hidden"
       animate="show"
 
+
+
       variants={fadeSlide}
       initial="hidden"
       animate="show"
       className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8"
+
 
     >
       <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
@@ -94,6 +115,8 @@ export default function AnalysisSummary({ data, coin }: Props) {
                 {fmtPct(overallChange)}
               </span>
 
+
+
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Overall Performance</p>
           <div className="flex items-center justify-between">
             <p className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -103,12 +126,15 @@ export default function AnalysisSummary({ data, coin }: Props) {
               {positive ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
               <span className="ml-1 font-bold">{pct(pctChange)}</span>
 
+
             </div>
           </div>
         </div>
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 gap-4">
+
+
 
           <Stat label="High Price" value={fmt(high)} />
           <Stat label="Low Price" value={fmt(low)} />

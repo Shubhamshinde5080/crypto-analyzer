@@ -14,7 +14,14 @@ import { motion } from 'framer-motion';
 
 
 
+import { ArrowUp, ArrowDown } from 'lucide-react';
 import Badge from './Badge';
+import { motion } from 'framer-motion';
+
+
+
+import Badge from './Badge';
+
 
 
 const fadeSlide = {
@@ -37,15 +44,19 @@ export default function AnalysisTable({ data }: Props) {
   return (
     <motion.section
 
+
+
       className="bg-white dark:bg-gray-800 shadow rounded-lg mb-8"
       variants={fadeSlide}
       initial="hidden"
       animate="show"
 
+
       variants={fadeSlide}
       initial="hidden"
       animate="show"
       className="bg-white dark:bg-gray-800 shadow rounded-lg mb-8"
+
 
     >
       <div className="overflow-auto">
@@ -77,6 +88,16 @@ export default function AnalysisTable({ data }: Props) {
 
                   {format(new Date(row.timestamp), 'MMM dd, HH:mm')}
                 </td>
+
+                <td className="px-4 py-2 text-sm text-right font-mono">{fmtUSD(row.open)}</td>
+                <td className="px-4 py-2 text-sm text-right font-mono">{fmtUSD(row.high)}</td>
+                <td className="px-4 py-2 text-sm text-right font-mono">{fmtUSD(row.low)}</td>
+                <td className="px-4 py-2 text-sm text-right font-mono">{fmtUSD(row.close)}</td>
+                <td className="px-4 py-2 text-sm text-right font-mono">
+                  {row.volume.toLocaleString()}
+                </td>
+                <td className="px-4 py-2 text-sm text-center">
+
                 <td className="px-4 py-2 text-sm text-right font-mono whitespace-nowrap">
                   {fmtUSD(row.open)}
                 </td>
@@ -96,6 +117,7 @@ export default function AnalysisTable({ data }: Props) {
                 <td className="px-4 py-2 text-sm text-center">
 
                 <td className="px-4 py-2 text-sm text-center whitespace-nowrap">
+
 
                   {row.pctChange !== null ? (
                     <Badge tone={row.pctChange >= 0 ? 'success' : 'error'}>

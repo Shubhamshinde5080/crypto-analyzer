@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { jest } from '@jest/globals';
 import CoinList from '@/components/CoinList';
-import { ThemeProvider } from '@/components/ThemeProvider';
+import { ThemeProvider } from 'next-themes';
 
 // Mock data
 const mockCoins = [
@@ -41,7 +41,11 @@ jest.mock('next/navigation', () => ({
 }));
 
 const renderWithTheme = (component: React.ReactElement) => {
-  return render(<ThemeProvider>{component}</ThemeProvider>);
+  return render(
+    <ThemeProvider attribute="class" defaultTheme="light">
+      {component}
+    </ThemeProvider>
+  );
 };
 
 describe('CoinList', () => {

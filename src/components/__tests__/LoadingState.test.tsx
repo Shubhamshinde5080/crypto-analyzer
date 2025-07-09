@@ -1,9 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import { LoadingSpinner, LoadingSkeleton, LoadingState } from '@/components/LoadingState';
-import { ThemeProvider } from '@/components/ThemeProvider';
+import { ThemeProvider } from 'next-themes';
 
 const renderWithTheme = (component: React.ReactElement) => {
-  return render(<ThemeProvider>{component}</ThemeProvider>);
+  return render(
+    <ThemeProvider attribute="class" defaultTheme="light">
+      {component}
+    </ThemeProvider>
+  );
 };
 
 describe('LoadingSpinner', () => {

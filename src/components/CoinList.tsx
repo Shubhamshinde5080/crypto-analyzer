@@ -101,7 +101,9 @@ export default function CoinList() {
             className="min-w-[720px] sm:min-w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg"
             role="table"
           >
+
           <table className="min-w-[720px] sm:min-w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
+
             <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
               <tr>
                 {['Rank','Name','Price (USD)','Volume (24h)',''].map((h) => (
@@ -118,9 +120,11 @@ export default function CoinList() {
                   className="hover:bg-white/70 dark:hover:bg-slate-700/60 transition-colors"
                 >
 
+
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {slice.map((c, i) => (
                 <tr key={c.id} className="hover:bg-white/70 dark:hover:bg-slate-700/60 transition-colors">
+
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {(page - 1) * PER_PAGE + i + 1}
                   </td>
@@ -133,7 +137,9 @@ export default function CoinList() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono text-gray-900 dark:text-white">
 
+
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+
 
                     {c.current_price !== undefined && c.current_price !== null
                       ? fmtUSD(c.current_price)
