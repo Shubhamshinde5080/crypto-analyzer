@@ -16,6 +16,7 @@ const fadeSlide = {
 interface Props {
   data: HistoryData[];
 }
+
 export default function AnalysisTable({ data }: Props) {
   const [page, setPage] = useState(1);
   const per = 20;
@@ -44,6 +45,7 @@ export default function AnalysisTable({ data }: Props) {
               ))}
             </tr>
           </thead>
+
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {slice.map((row) => (
               <tr
@@ -81,6 +83,7 @@ export default function AnalysisTable({ data }: Props) {
           </tbody>
         </table>
       </div>
+
       <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700">
         <button
           disabled={page === 1}
@@ -89,9 +92,11 @@ export default function AnalysisTable({ data }: Props) {
         >
           Previous
         </button>
+
         <span className="text-sm text-gray-700 dark:text-gray-300">
           Page {page} of {total}
         </span>
+
         <button
           disabled={page === total}
           onClick={() => setPage(page + 1)}

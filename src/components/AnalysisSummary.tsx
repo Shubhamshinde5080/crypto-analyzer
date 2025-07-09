@@ -32,7 +32,10 @@ export default function AnalysisSummary({ data, coin }: AnalysisSummaryProps) {
   const avgVolume = volumes.reduce((a, b) => a + b, 0) / volumes.length;
   const peakVolume = Math.max(...volumes);
 
-  const pctChanges = data.map((d) => d.pctChange).filter((c): c is number => c !== null);
+  const pctChanges = data
+    .map((d) => d.pctChange)
+    .filter((c): c is number => c !== null && c !== undefined);
+
   const bestGain = pctChanges.length ? Math.max(...pctChanges) : 0;
   const worstLoss = pctChanges.length ? Math.min(...pctChanges) : 0;
 
@@ -55,28 +58,34 @@ export default function AnalysisSummary({ data, coin }: AnalysisSummaryProps) {
       <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
         {coin.toUpperCase()} Analysis Summary
       </h2>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Performance */}
         <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
           <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">
             Overall Performance
           </h3>
+
           <div className="flex items-center justify-between mt-2">
-            <div>
-              <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                {fmt(openPrice)}
-                <span className="mx-1">→</span>
-                {fmt(closePrice)}
-              </p>
-            </div>
+            <p className="text-lg font-semibold text-gray-900 dark:text-white">
+              {fmt(openPrice)}
+              <span className="mx-1">→</span>
+              {fmt(closePrice)}
+            </p>
+
             <div className={`${positive ? 'text-green-600' : 'text-red-600'} flex items-center`}>
-              {positive ? <TrendingUp className="h-6 w-6" /> : <TrendingDown className="h-6 w-6" />}
+              {positive ? (
+                <TrendingUp className="h-6 w-6" />
+              ) : (
+                <TrendingDown className="h-6 w-6" />
+              )}
               <span className="ml-2 font-semibold" aria-live="polite">
                 {fmtPct(overallChange)}
               </span>
             </div>
           </div>
         </div>
+
         {/* Statistics Grid */}
         <div className="grid grid-cols-2 gap-4">
           <Stat label="High Price" value={fmt(high)} />
@@ -101,7 +110,15 @@ export default function AnalysisSummary({ data, coin }: AnalysisSummaryProps) {
   );
 }
 
-function Stat({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
+function Stat({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: string;
+  icon?: React.ReactNode;
+}) {
   return (
     <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
       {icon && <span className="mr-2">{icon}</span>}
