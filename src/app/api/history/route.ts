@@ -125,8 +125,18 @@ export async function GET(request: NextRequest) {
       console.log(`Last price point: ${new Date(prices[prices.length - 1][0]).toISOString()}`);
     }
 
-    // 7. Build a map for volume lookups
-    const volMap = new Map(volumes.map(([timestamp, volume]) => [timestamp, volume]));
+    // 7. Build a map for volume lookups (difference between points)
+    const volumeDiffMap = new Map<number, number>();
+    let prevVol: number | null = null;
+    for (const [timestamp, volume] of volumes) {
+      if (prevVol === null) {
+        volumeDiffMap.set(timestamp, volume);
+      } else {
+        const diff = volume - prevVol;
+        volumeDiffMap.set(timestamp, diff > 0 ? diff : 0);
+      }
+      prevVol = volume;
+    }
 
     // 8. Bucket data by intervals
     const buckets: Record<string, { prices: number[]; vols: number[] }> = {};
@@ -137,7 +147,7 @@ export async function GET(request: NextRequest) {
         buckets[bucketKey] = { prices: [], vols: [] };
       }
       buckets[bucketKey].prices.push(price);
-      buckets[bucketKey].vols.push(volMap.get(timestamp) ?? 0);
+      buckets[bucketKey].vols.push(volumeDiffMap.get(timestamp) ?? 0);
     });
 
     console.log(`Created ${Object.keys(buckets).length} buckets for ${interval} interval`);
@@ -194,7 +204,7 @@ export async function GET(request: NextRequest) {
       // Continue without caching
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json(historyData);
   } catch (err: unknown) {
     console.error('History API error:', err);
 
