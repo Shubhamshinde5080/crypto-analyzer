@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import ThemeProvider from '@/components/ThemeProvider';
-import ThemeToggle from '@/components/ThemeToggle';
+import { ThemeProvider } from 'next-themes';
+import Header from '@/components/Header';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -22,26 +22,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
-      <body className="antialiased bg-gray-50 dark:bg-gray-900 min-h-screen h-full">
-        <ThemeProvider>
+    <html lang="en" className="h-full font-sans">
+      <body className="antialiased min-h-screen h-full bg-gradient-to-br from-primaryFrom to-primaryTo dark:from-gray-900 dark:to-slate-800">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <ErrorBoundary>
-            <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center py-4">
-                  <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                    📈 Crypto Analyzer
-                  </h1>
-                  <div className="flex items-center space-x-4">
-                    <nav className="text-sm text-gray-500 dark:text-gray-400">
-                      Professional Cryptocurrency Analysis
-                    </nav>
-                    <ThemeToggle />
-                  </div>
-                </div>
-              </div>
+            <Header />
+            <div className="min-h-screen text-gray-900 dark:text-gray-100">
+              <div className="mx-auto max-w-7xl px-6">{children}</div>
             </div>
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900">{children}</div>
             <footer className="bg-gray-800 dark:bg-gray-900 text-white py-8 mt-16">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <p className="text-gray-300 dark:text-gray-400">
