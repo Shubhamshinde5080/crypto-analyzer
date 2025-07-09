@@ -64,6 +64,14 @@ export default function HistoryResultsPage() {
     try {
       const url = `/api/generate-pdf?coin=${coin}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&interval=${interval}`;
       const res = await fetch(url);
+
+      if (res.status === 503) {
+        // PDF service temporarily unavailable, redirect to print page
+        const printUrl = `/coins/${coin}/history/print?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&interval=${interval}`;
+        window.open(printUrl, '_blank');
+        return;
+      }
+
       if (!res.ok) throw new Error(`${res.status}`);
       const blob = await res.blob();
       const fileURL = URL.createObjectURL(blob);
@@ -74,7 +82,9 @@ export default function HistoryResultsPage() {
       URL.revokeObjectURL(fileURL);
     } catch (err) {
       console.error(err);
-      alert('PDF generation failed.');
+      // Fallback to print page
+      const printUrl = `/coins/${coin}/history/print?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&interval=${interval}`;
+      window.open(printUrl, '_blank');
     } finally {
       setGenerating(false);
     }
