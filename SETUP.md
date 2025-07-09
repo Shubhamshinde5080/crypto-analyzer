@@ -5,8 +5,7 @@
 Create a `.env` file in the root directory with the following variables:
 
 ```env
-# CoinGecko API Configuration
-COINGECKO_API_URL=https://api.coingecko.com/api/v3
+
 
 # Next.js Configuration
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -17,13 +16,12 @@ NODE_ENV=development
 
 ## Important Notes
 
-### CoinGecko API Limitations
+### Binance API Notes
 
-The free CoinGecko API has the following limitations:
+The Binance public endpoints are used and have the following considerations:
 
-- Historical data is limited to the past 365 days only
-- For data older than 365 days, you need a paid plan
-- Rate limiting applies to API requests
+- Rate limits apply per IP
+- Historical queries are limited to 1000 candles per request
 
 ### PDF Export Features
 

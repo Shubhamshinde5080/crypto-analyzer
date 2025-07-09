@@ -4,7 +4,7 @@ A professional, production-ready Next.js 15+ cryptocurrency analysis application
 
 ## 🚀 Features
 
-- **Real-time Crypto Data**: Fetch and analyze cryptocurrency data from CoinGecko API
+- **Real-time Crypto Data**: Fetch and analyze cryptocurrency data from Binance API
 - **Historical Analysis**: View OHLCV data with customizable time intervals
 - **Interactive Charts**: Price and volume charts powered by Recharts
 - **PDF Export**: Both client-side (html2canvas + jsPDF) and server-side (Puppeteer) PDF generation
@@ -45,7 +45,7 @@ A professional, production-ready Next.js 15+ cryptocurrency analysis application
    ```
 
 3. **Set up environment variables**:
-   The `.env.local` file is already configured with CoinGecko API URL. If you need to modify it:
+   The `.env.local` file is already configured. If you need to modify it:
 
    ```bash
    # Edit .env.local if needed
@@ -263,7 +263,7 @@ curl -X GET "http://localhost:3000/api/history?coin=bitcoin&from=2024-01-01&to=2
 
 ### Performance Issues
 
-- **Slow API responses**: Check CoinGecko API status and rate limits
+- **Slow API responses**: Check Binance API status and rate limits
 - **Large bundle size**: Analyze with `npm run analyze` (if configured)
 - **Memory leaks**: Monitor with browser DevTools Performance tab
 
@@ -415,7 +415,7 @@ Components are organized by:
 
 ### High Priority - ✅ COMPLETED
 
-- [x] **Performance & Caching**: Added server-side caching (Redis/Upstash Edge Cache) for `/api/history` to reduce redundant CoinGecko calls
+- [x] **Performance & Caching**: Added server-side caching (Redis/Upstash Edge Cache) for `/api/history` to reduce redundant Binance calls
 - [x] **Error Handling & Retries**: Implemented exponential backoff and retry logic for transient API failures
 - [x] **Accessibility (a11y)**: Ensured ARIA labels, keyboard focus, and semantic HTML for screen readers
 - [x] **Loading States**: Added comprehensive loading states and error boundaries throughout the application

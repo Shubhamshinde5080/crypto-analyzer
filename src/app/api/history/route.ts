@@ -3,12 +3,8 @@
 import { parseISO } from 'date-fns';
 import { NextRequest, NextResponse } from 'next/server';
 import { cacheManager } from '@/lib/cache';
-import {
-  fetchWithRetry,
-  APIError,
-  coinGeckoRateLimiter,
-  validateEnvVars,
-} from '@/lib/error-handling';
+import { APIError } from '@/lib/error-handling';
+import { getKlines } from '@/lib/binanceREST';
 import mockHistory from '@/lib/mockHistory';
 import type { HistoryData } from '@/types/api';
 
@@ -23,11 +19,6 @@ type Bucket = {
 };
 
 type ErrorResponse = { error: string; details?: string };
-
-type CoinGeckoResponse = {
-  prices: [number, number][];
-  total_volumes: [number, number][];
-};
 
 function parseInterval(interval: string): { value: number; unit: 'm' | 'h' | 'd' } {
   const match = /^(\d+)([mhd])$/.exec(interval);
@@ -52,9 +43,6 @@ function intervalToMs({ value, unit }: { value: number; unit: 'm' | 'h' | 'd' })
 
 export async function GET(request: NextRequest) {
   try {
-    // Validate environment variables
-    validateEnvVars(['COINGECKO_API_URL']);
-
     const { searchParams } = new URL(request.url);
     const coin = searchParams.get('coin');
     const from = searchParams.get('from');
@@ -110,35 +98,19 @@ export async function GET(request: NextRequest) {
     console.log(`Requested interval: ${interval}, parsed as:`, intervalObj);
     console.log(`Bucket size in ms: ${bucketMs} (${bucketMs / 1000} seconds)`);
 
-    // 5. Apply rate limiting
-    await coinGeckoRateLimiter.waitIfNeeded();
-
-    // 6. Fetch raw data from CoinGecko with retry logic
-    const base = process.env.COINGECKO_API_URL || 'https://api.coingecko.com/api/v3';
-    const fromTs = Math.floor(fromDate.getTime() / 1000);
-    const toTs = Math.floor(toDate.getTime() / 1000);
-    const url =
-      `${base}/coins/${encodeURIComponent(coin)}/market_chart/range` +
-      `?vs_currency=usd&from=${fromTs}&to=${toTs}`;
-
-    console.log(`Fetching from CoinGecko: ${url}`);
-    let apiRes: Response | null = null;
+    // 5. Fetch raw data from Binance REST
+    let klines;
     try {
-      apiRes = await fetchWithRetry(url, {}, { maxRetries: 3, baseDelay: 1000 });
+      klines = await getKlines(coin, fromDate.getTime(), toDate.getTime(), interval);
     } catch (err) {
-      console.error('CoinGecko fetch failed, using mock history:', err);
+      console.error('Binance fetch failed, using mock history:', err);
       return NextResponse.json(mockHistory);
     }
-    const { prices = [], total_volumes: volumes = [] } = (await apiRes.json()) as CoinGeckoResponse;
 
-    console.log(`CoinGecko returned ${prices.length} price points`);
-    if (prices.length > 0) {
-      console.log(`First price point: ${new Date(prices[0][0]).toISOString()}`);
-      console.log(`Last price point: ${new Date(prices[prices.length - 1][0]).toISOString()}`);
-    }
+    // 6. Build a map for volume lookups
+    const volMap = new Map(klines.map((k) => [k.timestamp, k.volume]));
 
-    // 7. Build a map for volume lookups
-    const volMap = new Map(volumes.map(([timestamp, volume]) => [timestamp, volume]));
+    const prices = klines.map((k) => [k.timestamp, k.close]);
 
     // 8. Bucket data by intervals
     const buckets: Record<string, { prices: number[]; vols: number[] }> = {};
