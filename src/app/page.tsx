@@ -17,6 +17,12 @@ export default function Home() {
           </h1>
           <p className="text-lg mb-6">Track market trends and export detailed PDF reports.</p>
           <a href="#coins" className="btn btn-primary">
+
+      <section className="grid md:grid-cols-2 gap-8 py-16 items-center text-white">
+        <div>
+          <h1 className="text-5xl md:text-6xl font-bold mb-4">Professional Crypto Analysis</h1>
+          <p className="text-lg mb-6">Track market trends and export detailed PDF reports.</p>
+          <a href="#coins" className="btn-primary">
             Get Started
           </a>
         </div>
@@ -25,6 +31,8 @@ export default function Home() {
             className="absolute inset-0 rounded-full bg-gradient-to-br from-primaryFrom to-primaryTo opacity-70 mix-blend-overlay"
             style={{ filter: 'blur(120px)' }}
           />
+
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primaryFrom to-primaryTo opacity-70 mix-blend-overlay blur-3xl" />
         </div>
       </section>
       <section

@@ -51,16 +51,27 @@ html {
     @apply inline-flex items-center px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg;
   }
   .btn-primary {
+
     @apply btn bg-gradient-to-r from-primaryFrom to-primaryTo text-white hover:from-primaryFrom/90 hover:to-primaryTo/90 active:scale-95 shadow-lg;
   }
   .btn-ghost {
     @apply btn text-primaryFrom dark:text-primaryTo hover:bg-primaryFrom/10 dark:hover:bg-primaryTo/10;
+
+    @apply btn bg-gradient-to-r from-primaryFrom to-primaryTo text-white shadow;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100;
+
   }
   .input {
     @apply border rounded-md px-3 py-2 focus:ring-2 focus:ring-primaryFrom focus:border-primaryFrom dark:bg-gray-800 dark:border-gray-600;
   }
   .card {
+
     @apply bg-cardLight/60 dark:bg-cardDark/60 ring-1 ring-black/5 dark:ring-white/10 rounded-2xl p-8 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-shadow duration-300;
+
+    @apply bg-cardLight dark:bg-cardDark shadow-xl rounded-2xl p-6 backdrop-blur-sm;
+
   }
   .badge {
     @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;

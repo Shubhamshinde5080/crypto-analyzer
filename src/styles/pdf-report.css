@@ -11,6 +11,7 @@ table thead {
   @apply bg-primaryFrom/5 text-primaryFrom;
 }
 
+
 table {
   @apply text-xs leading-4;
 }

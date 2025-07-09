@@ -160,6 +160,7 @@ export default function HistoryForm({ coin }: HistoryFormProps) {
           type="submit"
           disabled={isSubmitting}
           className="btn btn-primary w-full sm:w-auto"
+          className="btn-primary w-full sm:w-auto"
           aria-describedby="submit-help"
         >
           {isSubmitting ? 'Analyzing...' : 'Analyze Historical Data'}

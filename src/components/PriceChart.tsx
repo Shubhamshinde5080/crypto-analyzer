@@ -1,3 +1,4 @@
+// components/PriceChart.tsx
 'use client';
 
 import {
@@ -10,17 +11,22 @@ import {
   CartesianGrid,
 } from 'recharts';
 import { format } from 'date-fns';
+import { motion } from 'framer-motion';
 import type { HistoryData } from '@/types/api';
 import { fmtUSD } from '@/lib/format';
 import { motion } from 'framer-motion';
 
+
 interface Props {
   data: HistoryData[];
 }
+
+
 const fadeSlide = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } };
 
 export default function PriceChart({ data }: Props) {
   if (!data.length) return null;
+
   const chartData = data.map((d) => ({
     time: format(new Date(d.timestamp), 'MM-dd HH:mm'),
     close: d.close,

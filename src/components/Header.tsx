@@ -41,7 +41,11 @@ export default function Header() {
       </div>
       {open && (
         <div
+
           className="fixed inset-0 bg-gradient-to-br from-primaryFrom via-primaryFrom/60 to-primaryTo/80 backdrop-blur-sm flex flex-col items-center justify-center space-y-6 md:hidden"
+
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center space-y-6 md:hidden"
+
           role="dialog"
           aria-modal="true"
         >
@@ -57,7 +61,11 @@ export default function Header() {
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
+
               className="text-white text-2xl font-semibold tracking-wide"
+
+              className="text-white text-xl"
+
               aria-label={l.label}
             >
               {l.label}
