@@ -1,7 +1,9 @@
-import PDFReport from '@/components/PDFReport';
-import { notFound } from 'next/navigation';
+'use client';
 
-export const dynamic = 'force-dynamic'; // always fetch fresh data
+import { useState, useEffect } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
+import PDFReport from '@/components/PDFReport';
+import { LoadingState } from '@/components/LoadingState';
 
 interface HistoryData {
   timestamp: string;
@@ -13,71 +15,71 @@ interface HistoryData {
   pctChange: number | null;
 }
 
-async function fetchAnalysisData(
-  coin: string,
-  from: string,
-  to: string,
-  interval: string
-): Promise<HistoryData[]> {
-  try {
-    // Construct the full URL for server-side fetch
-    const baseUrl =
-      process.env.NODE_ENV === 'development'
-        ? 'http://localhost:3000'
-        : `https://${process.env.VERCEL_URL || 'crypto-analyzer-one.vercel.app'}`;
+export default function PrintPage() {
+  const { coin } = useParams<{ coin: string }>();
+  const searchParams = useSearchParams();
+  const [data, setData] = useState<HistoryData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-    const apiURL = `${baseUrl}/api/history?coin=${coin}&from=${from}&to=${to}&interval=${interval}`;
-    console.log('Fetching data from:', apiURL);
+  const from = searchParams.get('from');
+  const to = searchParams.get('to');
+  const interval = searchParams.get('interval');
 
-    const response = await fetch(apiURL, {
-      cache: 'no-store',
-      headers: {
-        'User-Agent': 'CryptoAnalyzer-PDF-Generator',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`API responded with status: ${response.status}`);
+  useEffect(() => {
+    if (!coin || !from || !to || !interval) {
+      setError(new Error('Missing required parameters'));
+      setLoading(false);
+      return;
     }
 
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error fetching analysis data:', error);
-    throw error;
-  }
-}
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-interface PrintPageProps {
-  params: Promise<{ coin: string }>;
-  searchParams: Promise<{ from: string; to: string; interval: string }>;
-}
+        const apiURL = `/api/history?coin=${coin}&from=${from}&to=${to}&interval=${interval}`;
+        console.log('Fetching data from:', apiURL);
 
-export default async function PrintPage({ params, searchParams }: PrintPageProps) {
-  const { coin } = await params;
-  const { from, to, interval } = await searchParams;
+        const response = await fetch(apiURL, {
+          cache: 'no-store',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`API responded with status: ${response.status}`);
+        }
+
+        const fetchedData = await response.json();
+        setData(fetchedData);
+      } catch (err) {
+        console.error('Error fetching analysis data:', err);
+        setError(err instanceof Error ? err : new Error('Unknown error'));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [coin, from, to, interval]);
 
   if (!coin || !from || !to || !interval) {
-    notFound();
-  }
-
-  let data: HistoryData[];
-  try {
-    data = await fetchAnalysisData(coin, from, to, interval);
-  } catch (error) {
     return (
       <div className="p-8 text-center">
-        <h1 className="text-2xl font-bold text-red-600 mb-4">Error Loading Data</h1>
-        <p className="text-gray-600">
-          Failed to fetch analysis data: {error instanceof Error ? error.message : 'Unknown error'}
-        </p>
+        <h1 className="text-2xl font-bold text-red-600 mb-4">Invalid Parameters</h1>
+        <p className="text-gray-600">Missing required parameters for analysis.</p>
       </div>
     );
   }
 
   return (
     <div className="bg-white text-black">
-      <PDFReport coin={coin} from={from} to={to} data={data} />
+      <LoadingState loading={loading} error={error}>
+        <PDFReport coin={coin} from={from} to={to} data={data} />
+      </LoadingState>
     </div>
   );
 }
