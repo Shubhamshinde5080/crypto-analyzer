@@ -1,4 +1,3 @@
-// components/CoinList.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -20,14 +19,12 @@ export default function CoinList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  /* ───────── fetch coins ──────── */
   useEffect(() => {
     async function fetchCoins() {
       try {
         setLoading(true);
         setError(null);
 
-        // use mock data in tests or when flag set
         if (process.env.NODE_ENV === 'test' || process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true') {
           await new Promise((r) => setTimeout(r, 100));
           setCoins(mockCoins);
@@ -51,7 +48,6 @@ export default function CoinList() {
         setCoins(data);
       } catch (error: unknown) {
         console.error('Error fetching coins:', error);
-        // Fall back to mock data if API fails
         console.log('Falling back to mock data...');
         setCoins(mockCoins);
         setError(error as Error);
@@ -62,7 +58,6 @@ export default function CoinList() {
     fetchCoins();
   }, []);
 
-  /* ───────── filters & pagination ──────── */
   const filtered = coins.filter(
     (c) =>
       c.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -71,7 +66,6 @@ export default function CoinList() {
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
   const slice = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
-  /* ───────── UI ──────── */
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">Crypto Analyzer</h1>
@@ -103,11 +97,9 @@ export default function CoinList() {
       <LoadingState loading={loading} error={error} loadingComponent={<Skeleton />}>
         <div className="overflow-auto">
           <table
-            className="min-w-[720px] sm:min-w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg"
+            className="min-w-[720px] sm:min-w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg divide-y divide-gray-200 dark:divide-gray-700"
             role="table"
           >
-            <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 shadow-sm">
-          <table className="min-w-[720px] sm:min-w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
               <tr>
                 {['Rank', 'Name', 'Price (USD)', 'Volume (24h)', ''].map((h) => (
@@ -121,12 +113,6 @@ export default function CoinList() {
                 ))}
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {pageSlice.map((c: Coin, i: number) => (
-                <tr
-                  key={c.id}
-                  className="hover:bg-gradient-to-r hover:from-white/70 hover:to-primaryFrom/10 dark:hover:from-slate-700/60 dark:hover:to-primaryTo/10 transition-colors"
-
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {slice.map((c, i) => (
                 <tr
@@ -152,16 +138,9 @@ export default function CoinList() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono text-gray-900 dark:text-white">
-                    {c.current_price !== undefined && c.current_price !== null
-                      ? fmtUSD(c.current_price)
-                      : 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono text-gray-900 dark:text-white">
-                    ${c.total_volume?.toLocaleString() || 'N/A'}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono">
                     {c.current_price != null ? fmtUSD(c.current_price) : 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono text-gray-900 dark:text-white">
                     {c.total_volume != null ? `$${c.total_volume.toLocaleString()}` : 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -185,7 +164,6 @@ export default function CoinList() {
             className="btn btn-ghost disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="btn btn-ghost disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Go to previous page"
           >
             Previous
@@ -197,8 +175,6 @@ export default function CoinList() {
             className="btn btn-ghost disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className="btn btn-ghost disabled:opacity-50 disabled:cursor-not-allowed"
-
             aria-label="Go to next page"
           >
             Next
