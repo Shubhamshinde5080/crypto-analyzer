@@ -46,3 +46,11 @@ next-env.d.ts
 
 # crypto analyzer specific
 /.husky/_  # husky internals
+
+# test artifacts
+/playwright-report/
+/test-results/
+/coverage/
+
+# build artifacts
+*.tsbuildinfo

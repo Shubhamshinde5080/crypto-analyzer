@@ -1,219 +1,150 @@
+// app/coins/[coin]/history/results/page.tsx
 'use client';
-
-import React from 'react';
+/*
+  Enhanced history‑results page
+  – Tailwind v3 responsive design
+  – Sticky action bar with back + export buttons
+  – Suspense‑like skeleton loader
+  – ErrorBoundary + graceful messaging
+*/
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useParams } from 'next/navigation';
 import Link from 'next/link';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import AnalysisTable from '@/components/AnalysisTable';
-import { PriceChart } from '@/components/PriceChart';
-import { VolumeChart } from '@/components/VolumeChart';
+import AnalysisSummary from '@/components/AnalysisSummary';
+import PriceChart from '@/components/PriceChart';
+import VolumeChart from '@/components/VolumeChart';
 import PDFReport from '@/components/PDFReport';
-import { LoadingState } from '@/components/LoadingState';
 import ErrorBoundary, { APIErrorFallback } from '@/components/ErrorBoundary';
+import { LoadingState } from '@/components/LoadingState';
 import { fetchWithRetry, APIError } from '@/lib/error-handling';
 import type { HistoryData } from '@/types/api';
 
 export default function HistoryResultsPage() {
-  const params = useParams();
-  const coin = params.coin as string;
-  const searchParams = useSearchParams();
+  /* ─────────────────────────────── hooks */
+  const { coin } = useParams<{ coin: string }>();
+  const sp = useSearchParams();
   const [data, setData] = useState<HistoryData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [generating, setGenerating] = useState(false);
-  const [clientExporting, setClientExporting] = useState(false);
-  const reportRef = useRef<HTMLDivElement>(null);
+  const printRef = useRef<HTMLDivElement>(null);
 
-  const from = searchParams.get('from');
-  const to = searchParams.get('to');
-  const interval = searchParams.get('interval');
+  const from = sp.get('from');
+  const to = sp.get('to');
+  const interval = sp.get('interval');
 
+  /* ─────────────────────────────── data fetch */
   useEffect(() => {
-    async function fetchData() {
-      if (!from || !to || !interval) {
-        setError(new Error('Missing required parameters'));
-        setLoading(false);
-        return;
-      }
-
+    if (!from || !to || !interval) {
+      setError(new Error('Missing required query parameters.'));
+      setLoading(false);
+      return;
+    }
+    (async () => {
+      setLoading(true);
+      setError(null);
       try {
-        setLoading(true);
-        setError(null);
-
-        const params = new URLSearchParams({
-          coin,
-          from,
-          to,
-          interval,
-        });
-
-        const response = await fetchWithRetry(`/api/history?${params}`, {
-          method: 'GET',
-        });
-
-        if (!response.ok) {
-          throw new APIError('Failed to fetch historical data', response.status);
-        }
-
-        const responseData: HistoryData[] = await response.json();
-        setData(responseData);
-      } catch (err: unknown) {
-        console.error('Error fetching data:', err);
-        setError(err instanceof Error ? err : new Error('Failed to fetch data'));
+        const qs = new URLSearchParams({ coin, from, to, interval });
+        const res = await fetchWithRetry(`/api/history?${qs}`);
+        if (!res.ok) throw new APIError('Failed to fetch data', res.status);
+        setData(await res.json());
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Unknown error'));
       } finally {
         setLoading(false);
       }
-    }
-
-    fetchData();
+    })();
   }, [coin, from, to, interval]);
 
-  // Server-side PDF generation (Puppeteer)
-  const generateServerPDF = async () => {
+  /* ─────────────────────────────── pdf export */
+  const handleExport = async () => {
     if (!from || !to || !interval) return;
-
     setGenerating(true);
     try {
-      const pdfUrl = `/api/generate-pdf?coin=${coin}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&interval=${encodeURIComponent(interval)}`;
-
-      const response = await fetch(pdfUrl);
-
-      if (!response.ok) {
-        throw new Error(`Failed to generate PDF: ${response.status}`);
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const url = `/api/generate-pdf?coin=${coin}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&interval=${interval}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`${res.status}`);
+      const blob = await res.blob();
+      const fileURL = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
+      a.href = fileURL;
       a.download = `${coin}-analysis-${new Date().toISOString().split('T')[0]}.pdf`;
-      document.body.appendChild(a);
       a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      alert('Failed to generate PDF. Please try again.');
+      URL.revokeObjectURL(fileURL);
+    } catch (err) {
+      console.error(err);
+      alert('PDF generation failed.');
     } finally {
       setGenerating(false);
     }
   };
 
-  // Client-side PDF export (html2canvas + jsPDF)
-  const exportClientPDF = async () => {
-    if (!reportRef.current || !from || !to) return;
-
-    setClientExporting(true);
-    try {
-      // Add print styles temporarily
-      reportRef.current.classList.add('print-mode');
-
-      const canvas = await html2canvas(reportRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'pt', 'a4');
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`${coin}-client-report-${new Date().toISOString().split('T')[0]}.pdf`);
-
-      // Remove print styles
-      reportRef.current.classList.remove('print-mode');
-    } catch (error) {
-      console.error('Error exporting client PDF:', error);
-      alert('Failed to export PDF. Please try again.');
-    } finally {
-      setClientExporting(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading historical data...</p>
-          </div>
-        </div>
+  /* ─────────────────────────────── ui */
+  const Header = () => (
+    <header className="sticky top-0 z-10 backdrop-blur bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex flex-col sm:flex-row gap-3 sm:gap-6 items-start sm:items-center justify-between">
+      <Link
+        href={`/coins/${coin}/history`}
+        className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1"
+      >
+        ← Back to form
+      </Link>
+      <div className="flex items-center gap-3">
+        <span className="text-xs text-gray-600 dark:text-gray-400 hidden sm:inline">
+          {from?.slice(0, 10)} → {to?.slice(0, 10)} / {interval}
+        </span>
+        <button
+          onClick={handleExport}
+          disabled={generating || !data.length}
+          className="inline-flex items-center gap-2 rounded-lg bg-green-600 hover:bg-green-700 px-4 py-1.5 text-white text-sm disabled:opacity-50"
+        >
+          {generating && (
+            <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+          )}
+          Export PDF
+        </button>
       </div>
-    );
-  }
+    </header>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Navigation & Export Controls */}
-        <div className="mb-6 flex justify-between items-center">
-          <Link
-            href={`/coins/${coin}/history`}
-            className="text-blue-600 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-2 py-1"
-            aria-label={`Go back to ${coin} history form`}
-          >
-            ← Back to History Form
-          </Link>
-          <div className="flex space-x-3">
-            <button
-              onClick={exportClientPDF}
-              disabled={clientExporting || !data.length}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              aria-label="Export PDF using client-side generation"
-            >
-              {clientExporting ? 'Exporting...' : 'Client PDF Export'}
-            </button>
-            <button
-              onClick={generateServerPDF}
-              disabled={generating || !data.length}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-              aria-label="Export PDF using server-side generation"
-            >
-              {generating ? 'Generating...' : 'Server PDF Export'}
-            </button>
-          </div>
-        </div>
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
+      <Header />
 
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 capitalize">{coin} Analysis Results</h1>
-          <p className="mt-2 text-gray-600">
-            Showing {data.length} data points from {from?.split('T')[0]} to {to?.split('T')[0]}
-            with {interval} intervals
-          </p>
-        </div>
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+        {loading && <Skeleton />}
 
-        {/* Charts and Data */}
         <LoadingState loading={loading} error={error}>
           <ErrorBoundary fallback={APIErrorFallback}>
-            <div className="space-y-6">
+            <h1 className="sr-only">{coin} analysis results</h1>
+            <AnalysisSummary data={data} coin={coin} />
+
+            <section className="grid gap-6 lg:grid-cols-2 mb-8">
               <PriceChart data={data} />
               <VolumeChart data={data} />
-              <AnalysisTable data={data} />
-            </div>
+            </section>
+
+            <AnalysisTable data={data} />
           </ErrorBoundary>
         </LoadingState>
+      </main>
 
-        {/* PDF Report Container for Client Export */}
-        <div
-          ref={reportRef}
-          className="print-report-container mt-8 hidden"
-          style={{
-            backgroundColor: 'white',
-            padding: '20mm',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-          }}
-        >
-          <PDFReport coin={coin} from={from || ''} to={to || ''} data={data} />
-        </div>
+      {/* hidden container for client‑side PDF capture */}
+      <div ref={printRef} className="hidden">
+        <PDFReport coin={coin} from={from ?? ''} to={to ?? ''} data={data} />
       </div>
+    </div>
+  );
+}
+
+/* ───────────── simple skeleton ───────────── */
+function Skeleton() {
+  return (
+    <div className="animate-pulse space-y-4">
+      <div className="h-8 w-1/3 bg-gray-200 dark:bg-gray-700 rounded" />
+      <div className="h-56 bg-gray-200 dark:bg-gray-700 rounded" />
+      <div className="h-56 bg-gray-200 dark:bg-gray-700 rounded" />
+      <div className="h-96 bg-gray-200 dark:bg-gray-700 rounded" />
     </div>
   );
 }

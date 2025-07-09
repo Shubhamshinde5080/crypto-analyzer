@@ -3,13 +3,6 @@ import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic'; // always fetch fresh data
 
-interface SearchParams {
-  coin: string;
-  from: string;
-  to: string;
-  interval: string;
-}
-
 interface HistoryData {
   timestamp: string;
   open: number;
@@ -27,16 +20,23 @@ async function fetchAnalysisData(
   interval: string
 ): Promise<HistoryData[]> {
   try {
-    // Use absolute URL in production, relative in development
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.NODE_ENV === 'development'
-        ? 'http://localhost:3001' // Development server often runs on 3001
-        : 'http://localhost:3000';
+    // Use the same host as the current request
+    const baseUrl =
+      process.env.NODE_ENV === 'development'
+        ? 'http://localhost:3000'
+        : process.env.VERCEL_URL
+          ? `https://${process.env.VERCEL_URL}`
+          : 'http://localhost:3000';
 
     const apiURL = `${baseUrl}/api/history?coin=${coin}&from=${from}&to=${to}&interval=${interval}`;
+    console.log('Fetching data from:', apiURL);
 
-    const response = await fetch(apiURL, { cache: 'no-store' });
+    const response = await fetch(apiURL, {
+      cache: 'no-store',
+      headers: {
+        'User-Agent': 'CryptoAnalyzer-PDF-Generator',
+      },
+    });
 
     if (!response.ok) {
       throw new Error(`API responded with status: ${response.status}`);
@@ -51,11 +51,13 @@ async function fetchAnalysisData(
 }
 
 interface PrintPageProps {
-  searchParams: Promise<SearchParams>;
+  params: Promise<{ coin: string }>;
+  searchParams: Promise<{ from: string; to: string; interval: string }>;
 }
 
-export default async function PrintPage({ searchParams }: PrintPageProps) {
-  const { coin, from, to, interval } = await searchParams;
+export default async function PrintPage({ params, searchParams }: PrintPageProps) {
+  const { coin } = await params;
+  const { from, to, interval } = await searchParams;
 
   if (!coin || !from || !to || !interval) {
     notFound();
