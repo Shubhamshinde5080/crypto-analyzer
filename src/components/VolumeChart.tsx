@@ -25,7 +25,7 @@ export default function VolumeChart({ data }: Props) {
       animate="show"
     >
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Volume Chart</h3>
-      <div className="w-full h-64">
+      <div className="w-full h-64 ring-1 ring-black/5 dark:ring-white/10 rounded-lg">
         <ResponsiveContainer>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />

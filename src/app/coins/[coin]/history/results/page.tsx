@@ -133,6 +133,7 @@ export default function HistoryResultsPage() {
         <LoadingState loading={loading} error={error}>
           <ErrorBoundary fallback={APIErrorFallback}>
             <h1 className="sr-only">{coin} analysis results</h1>
+            <div className="grid gap-6 sm:grid-cols-2">
             <div className="grid gap-8 md:grid-cols-2">
               <div className="sm:col-span-2">
                 <AnalysisSummary data={data} coin={coin} />

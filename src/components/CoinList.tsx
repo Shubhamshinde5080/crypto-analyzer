@@ -102,6 +102,11 @@ export default function CoinList() {
 
       <LoadingState loading={loading} error={error} loadingComponent={<Skeleton />}>
         <div className="overflow-auto">
+          <table
+            className="min-w-[720px] sm:min-w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg"
+            role="table"
+          >
+            <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 shadow-sm">
           <table className="min-w-[720px] sm:min-w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
               <tr>
@@ -116,6 +121,12 @@ export default function CoinList() {
                 ))}
               </tr>
             </thead>
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              {pageSlice.map((c: Coin, i: number) => (
+                <tr
+                  key={c.id}
+                  className="hover:bg-gradient-to-r hover:from-white/70 hover:to-primaryFrom/10 dark:hover:from-slate-700/60 dark:hover:to-primaryTo/10 transition-colors"
+
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {slice.map((c, i) => (
                 <tr
@@ -140,6 +151,13 @@ export default function CoinList() {
                       </p>
                     </div>
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono text-gray-900 dark:text-white">
+                    {c.current_price !== undefined && c.current_price !== null
+                      ? fmtUSD(c.current_price)
+                      : 'N/A'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono text-gray-900 dark:text-white">
+                    ${c.total_volume?.toLocaleString() || 'N/A'}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono">
                     {c.current_price != null ? fmtUSD(c.current_price) : 'N/A'}
                   </td>
@@ -167,6 +185,7 @@ export default function CoinList() {
             className="btn btn-ghost disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
+            className="btn btn-ghost disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Go to previous page"
           >
             Previous
@@ -178,6 +197,8 @@ export default function CoinList() {
             className="btn btn-ghost disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
+            className="btn btn-ghost disabled:opacity-50 disabled:cursor-not-allowed"
+
             aria-label="Go to next page"
           >
             Next

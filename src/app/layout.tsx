@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { ThemeProvider } from 'next-themes';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { ThemeProvider } from 'next-themes';
 import Header from '@/components/Header';
 import './globals.css';
 
@@ -22,6 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    <html lang="en" className="h-full font-sans tracking-tight">
     <html lang="en" className="h-full font-sans">
       <body className="antialiased min-h-screen h-full bg-gradient-to-br from-primaryFrom to-primaryTo dark:from-gray-900 dark:to-slate-800">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>

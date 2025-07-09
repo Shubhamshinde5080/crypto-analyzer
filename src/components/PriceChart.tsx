@@ -14,10 +14,13 @@ import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import type { HistoryData } from '@/types/api';
 import { fmtUSD } from '@/lib/format';
+import { motion } from 'framer-motion';
+
 
 interface Props {
   data: HistoryData[];
 }
+
 
 const fadeSlide = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } };
 
@@ -37,7 +40,7 @@ export default function PriceChart({ data }: Props) {
       animate="show"
     >
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Price Chart</h3>
-      <div className="w-full h-64">
+      <div className="w-full h-64 ring-1 ring-black/5 dark:ring-white/10 rounded-lg">
         <ResponsiveContainer>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />

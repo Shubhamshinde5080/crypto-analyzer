@@ -61,12 +61,20 @@ describe('AnalysisTable', () => {
     expect(screen.getByText('Volume')).toBeInTheDocument();
     expect(screen.getByText('% Change')).toBeInTheDocument();
 
+
     // one header row present
     expect(screen.getAllByRole('row')).toHaveLength(1);
+
   });
 
   it('renders table with data & headers', () => {
     renderWithTheme(<AnalysisTable data={mockHistoryData} />);
+
+    expect(screen.getByText('$44,000.0000')).toBeInTheDocument(); // open
+    expect(screen.getByText('$45,500.0000')).toBeInTheDocument(); // high
+    expect(screen.getByText('$43,500.0000')).toBeInTheDocument(); // low
+    // Multiple $45,000.0000 values exist (close for first row, open for second row, low for second row)
+    expect(screen.getAllByText('$45,000.0000')).toHaveLength(3);
 
     expect(screen.getByRole('table')).toBeInTheDocument();
     ['Time','Open','High','Low','Close','Volume','% Change'].forEach(h =>
@@ -77,6 +85,9 @@ describe('AnalysisTable', () => {
 
   it('formats 4‑decimal USD prices', () => {
     renderWithTheme(<AnalysisTable data={mockHistoryData} />);
+
+    expect(screen.getByText('1,000,000,000')).toBeInTheDocument();
+    expect(screen.getByText('1,100,000,000')).toBeInTheDocument();
 
 
     expect(screen.getByText('$44,000.0000')).toBeInTheDocument(); // open
@@ -101,6 +112,9 @@ describe('AnalysisTable', () => {
   it('shows positive change with up icon and green color', () => {
     renderWithTheme(<AnalysisTable data={mockHistoryData} />);
 
+    const badge = screen.getByText('2.50%').closest('span.badge-success');
+    expect(badge).toBeInTheDocument();
+
 
     const badge = screen.getByText('2.50%').closest('span.badge-success');
     expect(badge).toBeInTheDocument();
@@ -123,12 +137,14 @@ describe('AnalysisTable', () => {
     const negBadge = screen.getByText('1.20%').closest('span.badge-error');
     expect(negBadge).toBeInTheDocument();
 
+
     const negativeChange = screen.getByText('1.20%');
     const negIcon = negativeChange.previousSibling as HTMLElement;
     expect(negIcon).toHaveClass('text-red-600');
 
     const negativeCell = screen.getByText('1.20%').closest('td');
     expect(negativeCell?.querySelector('svg')).toHaveClass('text-red-600');
+
 
   });
 

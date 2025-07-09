@@ -13,11 +13,18 @@ module.exports = {
         primaryFrom: '#6A3AFF',
         primaryTo: '#41D1FF',
         surfaceLight: '#F9FAFB',
+        surfaceDark: '#1F2937',
+
         surfaceDark: '#1E293B',
         cardLight: '#FFFFFF',
         cardDark: '#273549',
       },
       fontFamily: {
+        sans: ['Inter', 'system-ui'],
+      },
+      letterSpacing: {
+        tighter: '-.02em',
+        tight: '-.01em',
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       spacing: {
