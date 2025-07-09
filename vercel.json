@@ -6,6 +6,8 @@
     }
   },
   "env": {
-    "COINGECKO_API_URL": "https://api.coingecko.com/api/v3"
+    "COINGECKO_API_URL": "https://api.coingecko.com/api/v3",
+    "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true",
+    "PUPPETEER_EXECUTABLE_PATH": "/usr/bin/google-chrome-stable"
   }
 }
