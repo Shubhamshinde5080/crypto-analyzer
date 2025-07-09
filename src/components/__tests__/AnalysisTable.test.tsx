@@ -65,12 +65,25 @@ describe('AnalysisTable', () => {
   it('shows positive change with up icon and green color', () => {
     renderWithTheme(<AnalysisTable data={mockHistoryData} />);
 
+
+    const badge = screen.getByText('2.50%').closest('span.badge-success');
+    expect(badge).toBeInTheDocument();
+    const positiveChange = screen.getByText('2.50%');
+    const icon = positiveChange.previousSibling as HTMLElement;
+    expect(icon).toHaveClass('text-green-600');
+
     const positiveCell = screen.getByText('2.50%').closest('td');
     expect(positiveCell?.querySelector('svg')).toHaveClass('text-green-600');
   });
 
   it('shows negative change with down icon and red color', () => {
     renderWithTheme(<AnalysisTable data={mockHistoryData} />);
+
+    const negBadge = screen.getByText('1.20%').closest('span.badge-error');
+    expect(negBadge).toBeInTheDocument();
+    const negativeChange = screen.getByText('1.20%');
+    const negIcon = negativeChange.previousSibling as HTMLElement;
+    expect(negIcon).toHaveClass('text-red-600');
 
     const negativeCell = screen.getByText('1.20%').closest('td');
     expect(negativeCell?.querySelector('svg')).toHaveClass('text-red-600');
@@ -100,6 +113,9 @@ describe('AnalysisTable', () => {
 
   it('renders inside responsive container', () => {
     renderWithTheme(<AnalysisTable data={mockHistoryData} />);
+
+    const tableContainer = screen.getByRole('table').closest('div');
+    expect(tableContainer).toHaveClass('overflow-auto');
 
     const tableWrapper = screen.getByRole('table').parentElement;
     expect(tableWrapper).toHaveClass('overflow-auto');

@@ -14,10 +14,12 @@ import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import type { HistoryData } from '@/types/api';
 import { fmtUSD } from '@/lib/format';
+import { motion } from 'framer-motion';
 
 interface Props {
   data: HistoryData[];
 }
+
 
 const fadeSlide = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } };
 
@@ -31,6 +33,10 @@ export default function PriceChart({ data }: Props) {
 
   return (
     <motion.section
+      className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8"
+      variants={fadeSlide}
+      initial="hidden"
+      animate="show"
       variants={fadeSlide}
       initial="hidden"
       animate="show"
