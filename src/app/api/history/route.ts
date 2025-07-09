@@ -9,6 +9,7 @@ import {
   coinGeckoRateLimiter,
   validateEnvVars,
 } from '@/lib/error-handling';
+import mockHistory from '@/lib/mockHistory';
 import type { HistoryData } from '@/types/api';
 
 type Bucket = {
@@ -68,6 +69,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Use mock data in test or when explicitly enabled
+    if (process.env.NODE_ENV === 'test' || process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true') {
+      return NextResponse.json(mockHistory);
+    }
+
     // 2. Check cache first
     try {
       const cachedData = await cacheManager.getCachedHistory(coin, from, to, interval);
@@ -116,7 +122,13 @@ export async function GET(request: NextRequest) {
       `?vs_currency=usd&from=${fromTs}&to=${toTs}`;
 
     console.log(`Fetching from CoinGecko: ${url}`);
-    const apiRes = await fetchWithRetry(url, {}, { maxRetries: 3, baseDelay: 1000 });
+    let apiRes: Response | null = null;
+    try {
+      apiRes = await fetchWithRetry(url, {}, { maxRetries: 3, baseDelay: 1000 });
+    } catch (err) {
+      console.error('CoinGecko fetch failed, using mock history:', err);
+      return NextResponse.json(mockHistory);
+    }
     const { prices = [], total_volumes: volumes = [] } = (await apiRes.json()) as CoinGeckoResponse;
 
     console.log(`CoinGecko returned ${prices.length} price points`);
