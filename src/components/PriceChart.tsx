@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import { format } from 'date-fns';
 import type { HistoryData } from '@/types/api';
+import { fmtUSD } from '@/lib/format';
 
 interface Props {
   data: HistoryData[];
@@ -32,14 +33,11 @@ export default function PriceChart({ data }: Props) {
             <XAxis dataKey="time" tick={{ fontSize: 10 }} />
             <YAxis
               domain={['auto', 'auto']}
-              tickFormatter={(val) => `$${typeof val === 'number' ? val.toFixed(0) : val}`}
+              tickFormatter={(val) => (typeof val === 'number' ? fmtUSD(val) : String(val))}
             />
             <Tooltip
               labelFormatter={(label) => `Time: ${label}`}
-              formatter={(val) => {
-                // Fix the type error by checking if val is a number before calling toFixed
-                return [`$${typeof val === 'number' ? val.toFixed(2) : val}`, 'Close'];
-              }}
+              formatter={(val) => [typeof val === 'number' ? fmtUSD(val) : String(val), 'Close']}
             />
             <Line type="monotone" dataKey="close" stroke="#3B82F6" dot={false} />
           </LineChart>
