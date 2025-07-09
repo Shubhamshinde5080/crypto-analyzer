@@ -101,6 +101,9 @@ export async function GET(request: NextRequest) {
     const intervalObj = parseInterval(interval);
     const bucketMs = intervalToMs(intervalObj);
 
+    console.log(`Requested interval: ${interval}, parsed as:`, intervalObj);
+    console.log(`Bucket size in ms: ${bucketMs} (${bucketMs / 1000} seconds)`);
+
     // 5. Apply rate limiting
     await coinGeckoRateLimiter.waitIfNeeded();
 
@@ -112,8 +115,15 @@ export async function GET(request: NextRequest) {
       `${base}/coins/${encodeURIComponent(coin)}/market_chart/range` +
       `?vs_currency=usd&from=${fromTs}&to=${toTs}`;
 
+    console.log(`Fetching from CoinGecko: ${url}`);
     const apiRes = await fetchWithRetry(url, {}, { maxRetries: 3, baseDelay: 1000 });
     const { prices = [], total_volumes: volumes = [] } = (await apiRes.json()) as CoinGeckoResponse;
+
+    console.log(`CoinGecko returned ${prices.length} price points`);
+    if (prices.length > 0) {
+      console.log(`First price point: ${new Date(prices[0][0]).toISOString()}`);
+      console.log(`Last price point: ${new Date(prices[prices.length - 1][0]).toISOString()}`);
+    }
 
     // 7. Build a map for volume lookups
     const volMap = new Map(volumes.map(([timestamp, volume]) => [timestamp, volume]));
@@ -121,6 +131,7 @@ export async function GET(request: NextRequest) {
     // 8. Bucket data by intervals
     const buckets: Record<string, { prices: number[]; vols: number[] }> = {};
     prices.forEach(([timestamp, price]) => {
+      // Convert timestamp to bucket key by rounding down to nearest interval
       const bucketKey = String(Math.floor(timestamp / bucketMs) * bucketMs);
       if (!buckets[bucketKey]) {
         buckets[bucketKey] = { prices: [], vols: [] };
@@ -128,6 +139,8 @@ export async function GET(request: NextRequest) {
       buckets[bucketKey].prices.push(price);
       buckets[bucketKey].vols.push(volMap.get(timestamp) ?? 0);
     });
+
+    console.log(`Created ${Object.keys(buckets).length} buckets for ${interval} interval`);
 
     // 9. Transform into sorted array with OHLC + volume + % change
     const sortedKeys = Object.keys(buckets)
@@ -156,6 +169,22 @@ export async function GET(request: NextRequest) {
       ...bucket,
       timestamp: new Date(bucket.timestamp).toISOString(),
     }));
+
+    // Debug: Log the intervals between data points
+    if (result.length > 1) {
+      const intervalDiffs = [];
+      for (let i = 1; i < result.length; i++) {
+        const diff = result[i].timestamp - result[i - 1].timestamp;
+        intervalDiffs.push(diff);
+      }
+      const avgInterval = intervalDiffs.reduce((a, b) => a + b, 0) / intervalDiffs.length;
+      console.log(
+        `Average interval between buckets: ${avgInterval}ms (${avgInterval / 1000} seconds)`
+      );
+      console.log(`Expected interval: ${bucketMs}ms (${bucketMs / 1000} seconds)`);
+    }
+
+    console.log(`Returning ${result.length} data points`);
 
     // 11. Cache the result
     try {
