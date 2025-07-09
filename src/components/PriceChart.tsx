@@ -12,20 +12,34 @@ import {
 import { format } from 'date-fns';
 import type { HistoryData } from '@/types/api';
 import { fmtUSD } from '@/lib/format';
+import { motion } from 'framer-motion';
 
 interface Props {
   data: HistoryData[];
 }
+
+const fadeSlide = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0 },
+};
+
 export default function PriceChart({ data }: Props) {
   if (!data.length) return null;
+
   const chartData = data.map((d) => ({
     time: format(new Date(d.timestamp), 'MM-dd HH:mm'),
     close: d.close,
   }));
 
   return (
-    <section className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
+    <motion.section
+      className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8"
+      variants={fadeSlide}
+      initial="hidden"
+      animate="show"
+    >
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Price Chart</h3>
+
       <div className="w-full h-64">
         <ResponsiveContainer>
           <LineChart data={chartData}>
@@ -37,12 +51,15 @@ export default function PriceChart({ data }: Props) {
             />
             <Tooltip
               labelFormatter={(label) => `Time: ${label}`}
-              formatter={(val) => [typeof val === 'number' ? fmtUSD(val) : String(val), 'Close']}
+              formatter={(val) => [
+                typeof val === 'number' ? fmtUSD(val) : String(val),
+                'Close',
+              ]}
             />
             <Line type="monotone" dataKey="close" stroke="#3B82F6" dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
-    </section>
+    </motion.section>
   );
 }

@@ -33,8 +33,7 @@ describe('AnalysisTable', () => {
   it('renders empty state when no data', () => {
     renderWithTheme(<AnalysisTable data={[]} />);
 
-    const rows = screen.getAllByRole('row');
-    // header row only
+    const rows = screen.getAllByRole('row'); // header only
     expect(rows).toHaveLength(1);
   });
 
@@ -42,13 +41,9 @@ describe('AnalysisTable', () => {
     renderWithTheme(<AnalysisTable data={mockHistoryData} />);
 
     expect(screen.getByRole('table')).toBeInTheDocument();
-    expect(screen.getByText('Time')).toBeInTheDocument();
-    expect(screen.getByText('Open')).toBeInTheDocument();
-    expect(screen.getByText('High')).toBeInTheDocument();
-    expect(screen.getByText('Low')).toBeInTheDocument();
-    expect(screen.getByText('Close')).toBeInTheDocument();
-    expect(screen.getByText('Volume')).toBeInTheDocument();
-    expect(screen.getByText('% Change')).toBeInTheDocument();
+    ['Time', 'Open', 'High', 'Low', 'Close', 'Volume', '% Change'].forEach((h) =>
+      expect(screen.getByText(h)).toBeInTheDocument(),
+    );
   });
 
   it('formats prices correctly', () => {
@@ -57,8 +52,7 @@ describe('AnalysisTable', () => {
     expect(screen.getByText('$44,000.0000')).toBeInTheDocument(); // open
     expect(screen.getByText('$45,500.0000')).toBeInTheDocument(); // high
     expect(screen.getByText('$43,500.0000')).toBeInTheDocument(); // low
-    // Multiple $45,000.0000 values exist (close for first row, open for second row, low for second row)
-    expect(screen.getAllByText('$45,000.0000')).toHaveLength(3);
+    expect(screen.getAllByText('$45,000.0000')).toHaveLength(3);  // duplicates
   });
 
   it('formats volumes correctly', () => {
@@ -68,25 +62,18 @@ describe('AnalysisTable', () => {
     expect(screen.getByText('1,100,000,000')).toBeInTheDocument();
   });
 
-  it('formats market cap correctly', () => {
-    // This test is not applicable since AnalysisTable doesn't show market cap
-    // Removing this test
-  });
-
-  it('shows positive changes in green with up arrow', () => {
+  it('shows positive changes in green badge', () => {
     renderWithTheme(<AnalysisTable data={mockHistoryData} />);
 
-    const positiveChange = screen.getByText('2.50%');
-    const icon = positiveChange.previousSibling as HTMLElement;
-    expect(icon).toHaveClass('text-green-600');
+    const badge = screen.getByText('2.50%').closest('span.badge-success');
+    expect(badge).toBeInTheDocument();
   });
 
-  it('shows negative changes in red with down arrow', () => {
+  it('shows negative changes in red badge', () => {
     renderWithTheme(<AnalysisTable data={mockHistoryData} />);
 
-    const negativeChange = screen.getByText('1.20%');
-    const negIcon = negativeChange.previousSibling as HTMLElement;
-    expect(negIcon).toHaveClass('text-red-600');
+    const badge = screen.getByText('1.20%').closest('span.badge-error');
+    expect(badge).toBeInTheDocument();
   });
 
   it('formats dates correctly', () => {
@@ -108,7 +95,6 @@ describe('AnalysisTable', () => {
         pctChange: null,
       },
     ];
-
     renderWithTheme(<AnalysisTable data={dataWithNullChange} />);
 
     expect(screen.getByText('—')).toBeInTheDocument();
@@ -121,7 +107,7 @@ describe('AnalysisTable', () => {
     expect(table).toBeInTheDocument();
 
     const columnHeaders = screen.getAllByRole('columnheader');
-    expect(columnHeaders).toHaveLength(7); // Updated count for actual columns
+    expect(columnHeaders).toHaveLength(7);
 
     const rows = screen.getAllByRole('row');
     expect(rows).toHaveLength(3); // 1 header + 2 data rows
@@ -138,6 +124,6 @@ describe('AnalysisTable', () => {
     renderWithTheme(<AnalysisTable data={mockHistoryData} />);
 
     const tableContainer = screen.getByRole('table').closest('div');
-    expect(tableContainer).toHaveClass('overflow-x-auto');
+    expect(tableContainer).toHaveClass('overflow-auto');
   });
 });

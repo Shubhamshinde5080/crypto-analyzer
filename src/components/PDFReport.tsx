@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import type { HistoryData } from '@/types/api';
 import { fmtUSD } from '@/lib/format';
 import '@/styles/pdf.css';
+import '@/styles/pdf-report.css';
 
 interface PDFReportProps {
   coin: string;
